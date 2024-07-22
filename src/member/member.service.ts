@@ -4,8 +4,7 @@ import { UpdateMemberDto } from './dto/update-member.dto';
 import { Repository } from 'typeorm';
 import { Member } from './entities/member.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MaterialService } from 'src/material/material.service';
-import { Material } from 'src/material/entities/material.entity';
+import { MemberMaterialService } from './membermaterial.service';
 
 @Injectable()
 export class MemberService {
@@ -13,61 +12,97 @@ export class MemberService {
     @InjectRepository(Member)
     private readonly memberRepo: Repository<Member>,
 
-    private readonly materialService: MaterialService,
+    private readonly mmService: MemberMaterialService,
   ) {}
 
   async create(createMemberDto: CreateMemberDto) {
-    const { materials, ...memberDto } = createMemberDto;
-
     try {
-      const newMember = this.memberRepo.create(memberDto);
-      const savedMember = await this.memberRepo.save(newMember);
-      const member = await this.memberRepo.findOneBy({ _id: savedMember._id });
-      const mmaterials = [];
-      for (const mat of materials) {
-        try {
-          let material = await this.materialService.findOneByPiecemark(
-            mat.piecemark,
-          );
-
-          if (material == null) {
-            material = await this.materialService.create(mat);
-          }
-          mmaterials.push(material);
-        } catch (error) {
-          console.log(error);
-        }
-      }
-
-      member.materials = mmaterials;
-      await this.memberRepo.save(member);
+      const member = await this.memberRepo.save(createMemberDto);
       return member;
     } catch (error) {
-      console.log(error.code);
-      throw new BadRequestException();
+      console.log(error);
+    }
+  }
+
+  async findAll(job_id: number, paquete_id: string) {
+    let members: Member[];
+    if (paquete_id != undefined) {
+      try {
+        const pq_id = Number.parseInt(paquete_id);
+        members = await this.memberRepo.find({
+          where: {
+            paquete: { _id: pq_id, job: { _id: job_id } },
+          },
+          relations: { paquete: { job: true } },
+        });
+      } catch {
+        throw new BadRequestException('Invalid paquete id');
+      }
+    } else {
+      members = await this.memberRepo.find({
+        where: {
+          paquete: { job: { _id: job_id } },
+        },
+        relations: { paquete: { job: true } },
+      });
     }
 
-    // const newMember = this.memberRepo.create(createMemberDto);
-    // try {
-    //   return await this.memberRepo.save(newMember);
-    // } catch (error) {
-    //   return null;
-    // }
+    return await Promise.all(
+      members.map(async (mb) => {
+        const weight = await this.mmService.getWeight(mb._id);
+        return {
+          _id: mb._id,
+          piecemark: mb.piecemark,
+          mem_desc: `${mb.mem_desc} ${mb.main_material}`,
+          quantity: mb.quantity,
+          weight: Math.round(weight),
+        };
+      }),
+    );
   }
 
-  findAll() {
-    return this.memberRepo.find({ relations: { materials: true } });
+  async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
+    return await this.memberRepo.findOne({
+      where: { piecemark, paquete: { _id: paqueteId } },
+      relations: ['paquete'],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} member`;
+  async getBarcode(paquete_id: number) {
+    const barcodes = await this.memberRepo.find({
+      where: { paquete: { _id: paquete_id } },
+      relations: { paquete: true },
+      select: ['barcode'],
+    });
+
+    return barcodes.map((result) => result.barcode);
   }
 
-  update(id: number, updateMemberDto: UpdateMemberDto) {
-    return `This action updates a #${id} member`;
+  async buildOfMaterials(paquete_id: number, piecemark: string) {
+    const member = await this.memberRepo.findOne({
+      where: { piecemark, paquete: { _id: paquete_id } },
+      relations: { member_material: { material: true } },
+    });
+
+    const weight = await this.mmService.getWeight(member._id);
+    return {
+      main_material: member.main_material,
+      piecemark: member.piecemark,
+      barcode: member.barcode,
+      mem_desc: member.mem_desc,
+      quantity: member.quantity,
+      weight: Math.round(weight),
+      materials: member.member_material.map((mat) => {
+        return {
+          quantity: mat.quantity,
+          cuted: mat.cuted,
+          ...mat.material,
+        };
+      }),
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} member`;
+  updateByCode(barcode: string, updateMemberDto: UpdateMemberDto) {
+    this.memberRepo.update({ barcode }, { ...updateMemberDto });
   }
 }

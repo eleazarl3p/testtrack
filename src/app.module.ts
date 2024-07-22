@@ -7,6 +7,14 @@ import { MaterialModule } from './material/material.module';
 import { MemberModule } from './member/member.module';
 import { ContactModule } from './contact/contact.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { LevelModule } from './level/level.module';
+import { AreaModule } from './area/area.module';
+import { TicketModule } from './ticket/ticket.module';
+import { MachineModule } from './machine/machine.module';
+import { ShapeModule } from './shape/shape.module';
+import { TeamModule } from './team/team.module';
 
 import * as dotenv from 'dotenv';
 
@@ -31,6 +39,14 @@ dotenv.config();
     MaterialModule,
     MemberModule,
     ContactModule,
+    AuthModule,
+    UserModule,
+    LevelModule,
+    AreaModule,
+    TicketModule,
+    MachineModule,
+    ShapeModule,
+    TeamModule,
   ],
   controllers: [AppController],
   providers: [AppService],

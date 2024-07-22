@@ -39,4 +39,7 @@ export class CreateMaterialDto {
 
   @IsNumber()
   width: number;
+
+  @IsNumber()
+  quantity: number;
 }

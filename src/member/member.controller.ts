@@ -1,42 +1,23 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { MemberService } from './member.service';
-import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
 
-@Controller('member')
+@Controller('members')
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 
-  @Post()
-  create(@Body() createMemberDto: CreateMemberDto) {
-    return this.memberService.create(createMemberDto);
+  @Get(':jobid/')
+  findAll(
+    @Param('jobid', ParseIntPipe) jobid: number,
+    @Query('paqueteid') paqueteid: string,
+  ) {
+    return this.memberService.findAll(jobid, paqueteid);
   }
 
-  @Get()
-  findAll() {
-    return this.memberService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.memberService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMemberDto: UpdateMemberDto) {
-    return this.memberService.update(+id, updateMemberDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.memberService.remove(+id);
+  @Get('build-of-materials/:pqid/:piecemark')
+  buildOfMaterials(
+    @Param('pqid', ParseIntPipe) paqueteid: number,
+    @Param('piecemark') piecemark: string,
+  ) {
+    return this.memberService.buildOfMaterials(paqueteid, piecemark);
   }
 }

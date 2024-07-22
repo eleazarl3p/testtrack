@@ -1,6 +1,7 @@
 import { Job } from 'src/job/entites/job.entity';
 import { Member } from 'src/member/entities/member.entity';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -13,7 +14,7 @@ import {
 
 @Entity()
 @Unique(['name', 'job'])
-export class Paquete {
+export class Paquete extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 
@@ -33,8 +34,8 @@ export class Paquete {
   job: Job;
 
   @CreateDateColumn()
-  create_date: Date;
+  created_at: Date;
 
   @DeleteDateColumn()
-  delete_date: Date;
+  deleted_at: Date;
 }

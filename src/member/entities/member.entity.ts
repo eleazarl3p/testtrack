@@ -1,27 +1,26 @@
-import { Job } from 'src/job/entites/job.entity';
-import { Material } from 'src/material/entities/material.entity';
 import { Paquete } from 'src/paquete/entities/paquete.entity';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { MemberMaterial } from './membermaterial.entity';
+import { TicketMember } from 'src/ticket/entities/tiketmember.entity';
 
 @Entity()
-export class Member {
+export class Member extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 
   @Column()
-  number: number;
+  idx_pcmk: number;
 
   @Column()
-  idx_pcmk: number;
+  main_material: string;
 
   @Column()
   piecemark: string;
@@ -35,27 +34,15 @@ export class Member {
   @Column()
   quantity: number;
 
-  @ManyToMany(() => Material, (material) => material.members, { eager: true })
-  @JoinTable()
-  materials: Material[];
-
-  // @OneToMany(
-  //   () => MemberToMaterial,
-  //   (member_to_material) => member_to_material.member,
-  // )
-  // public member_to_materials: MemberToMaterial[];
-
-  // @OneToMany(() => Member_History, (mh) => mh.member, {
-  //   cascade: true,
-  // })
-  // history: Member_History[];
-
   @ManyToOne(() => Paquete, (paquete) => paquete.members)
   paquete: Paquete;
 
-  //   @OneToOne(() => Ticket_Item, (item) => item.member)
-  //   ticket_item: Ticket_Item;
-
   @CreateDateColumn()
   create_date: Date;
+
+  @OneToMany(() => MemberMaterial, (mm) => mm.member)
+  member_material: MemberMaterial[];
+
+  @OneToMany(() => TicketMember, (tm) => tm.member)
+  ticket_member: TicketMember[];
 }

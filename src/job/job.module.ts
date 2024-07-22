@@ -8,5 +8,6 @@ import { Job } from './entites/job.entity';
   imports: [TypeOrmModule.forFeature([Job])],
   controllers: [JobController],
   providers: [JobService],
+  exports: [JobService],
 })
 export class JobModule {}

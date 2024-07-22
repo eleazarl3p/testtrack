@@ -2,6 +2,7 @@ import { Contact } from 'src/contact/entities/contact.entity';
 import { AddressDto } from 'src/otherDtos/address.dto';
 import { Paquete } from 'src/paquete/entities/paquete.entity';
 import {
+  BaseEntity,
   Column,
   DeleteDateColumn,
   Entity,
@@ -13,7 +14,7 @@ import {
 
 @Entity()
 @Unique(['job_name', 'barcode'])
-export class Job {
+export class Job extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 
@@ -26,7 +27,7 @@ export class Job {
   @Column({ nullable: true })
   url_3d: string;
 
-  @Column('json')
+  @Column('json', { nullable: true })
   address: AddressDto;
 
   @OneToMany(() => Paquete, (paquete) => paquete.job)

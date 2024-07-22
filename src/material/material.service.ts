@@ -4,45 +4,77 @@ import { UpdateMaterialDto } from './dto/update-material.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Material } from './entities/material.entity';
 import { Repository } from 'typeorm';
+import { MemberMaterialService } from 'src/member/membermaterial.service';
 
 @Injectable()
 export class MaterialService {
   constructor(
     @InjectRepository(Material)
     private readonly materialRepo: Repository<Material>,
+
+    private readonly mmService: MemberMaterialService,
   ) {}
 
   async create(createMaterialDto: CreateMaterialDto) {
     try {
-      const newMaterial = this.materialRepo.create(createMaterialDto);
-      newMaterial.barcode = 'W11125-' + newMaterial.piecemark;
-      return await this.materialRepo.save(newMaterial);
+      return this.materialRepo.save(createMaterialDto);
+      // newMaterial.barcode = `W${}-${newMaterial.piecemark.padStart(5, '0')}`;
+      // return await this.materialRepo.save(newMaterial);
     } catch (error) {
       console.log(error.code);
       throw new ConflictException();
     }
   }
 
-  findAll() {
-    return this.materialRepo.find({ relations: { members: true } });
+  async findAll() {
+    const materials = await this.materialRepo.find();
+
+    const m = await Promise.all(
+      materials.map(async (mat) => {
+        return await this.mmService.countMaterials(mat._id);
+      }),
+    );
+
+    return m;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} material`;
+  async findOne(piecemark: string, job_name: string) {
+    const material = await this.findOneByPiecemarkAndBarcode(
+      piecemark,
+      job_name,
+    );
+
+    return await this.mmService.countMaterials(material._id);
   }
 
-  findOneByPiecemark(piecemark: string) {
-    return this.materialRepo.findOne({
-      where: { piecemark },
-      relations: { members: true },
-    });
+  // findOneByPiecemark(piecemark: string) {
+  //   return this.materialRepo.findOne({
+  //     where: { piecemark },
+  //   });
+  // }
+
+  async findOneByPiecemarkAndBarcode(
+    piecemark: string,
+    job_name: string,
+  ): Promise<Material> {
+    return await this.materialRepo
+      .createQueryBuilder('material')
+      .where('material.piecemark = :piecemark', { piecemark })
+      .andWhere('material.barcode LIKE :job_name', {
+        job_name: `%${job_name}%`,
+      })
+      .getOne();
   }
 
-  update(id: number, updateMaterialDto: UpdateMaterialDto) {
-    return `This action updates a #${id} material`;
-  }
+  async getBarcodesByPaquete(paqueteId: number): Promise<string[]> {
+    const barcodes = await this.materialRepo
+      .createQueryBuilder('material')
+      .innerJoin('material.member_material', 'member_material')
+      .innerJoin('member_material.member', 'member')
+      .where('member.paquete_id = :paqueteId', { paqueteId })
+      .select('material.barcode')
+      .getRawMany();
 
-  remove(id: number) {
-    return `This action removes a #${id} material`;
+    return barcodes.map((result) => result.material_barcode);
   }
 }

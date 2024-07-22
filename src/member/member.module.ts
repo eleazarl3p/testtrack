@@ -4,11 +4,13 @@ import { MemberController } from './member.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Member } from './entities/member.entity';
 
-import { MaterialModule } from 'src/material/material.module';
+import { MemberMaterial } from './entities/membermaterial.entity';
+import { MemberMaterialService } from './membermaterial.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Member]), MaterialModule],
+  imports: [TypeOrmModule.forFeature([Member, MemberMaterial])],
   controllers: [MemberController],
-  providers: [MemberService],
+  providers: [MemberService, MemberMaterialService],
+  exports: [MemberService, MemberMaterialService],
 })
 export class MemberModule {}

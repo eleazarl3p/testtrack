@@ -1,15 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { PaqueteService } from './paquete.service';
 import { CreatePaqueteDto } from './dto/create-paquete.dto';
 import { UpdatePaqueteDto } from './dto/update-paquete.dto';
 
-@Controller('paquete')
+@Controller('paquetes')
 export class PaqueteController {
   constructor(private readonly paqueteService: PaqueteService) {}
 
-  @Post()
-  create(@Body() createPaqueteDto: CreatePaqueteDto) {
-    return this.paqueteService.create(createPaqueteDto);
+  @Post(':id')
+  create(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() createPaqueteDto: CreatePaqueteDto,
+  ) {
+    return this.paqueteService.create(id, createPaqueteDto);
   }
 
   @Get()
@@ -18,8 +30,8 @@ export class PaqueteController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paqueteService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.paqueteService.getBarcode(id); //this.paqueteService.findOne(+id);
   }
 
   @Patch(':id')

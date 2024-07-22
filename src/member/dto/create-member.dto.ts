@@ -4,12 +4,6 @@ import { CreateMaterialDto } from 'src/material/dto/create-material.dto';
 
 export class CreateMemberDto {
   @IsNumber()
-  number: number;
-
-  @IsString()
-  barcode: string;
-
-  @IsNumber()
   idx_pcmk: number;
 
   @IsString()
@@ -17,6 +11,9 @@ export class CreateMemberDto {
 
   @IsString()
   mem_desc: string;
+
+  @IsString()
+  main_material: string;
 
   @IsNumber()
   quantity: number;
