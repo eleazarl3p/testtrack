@@ -15,6 +15,7 @@ import { TicketModule } from './ticket/ticket.module';
 import { MachineModule } from './machine/machine.module';
 import { ShapeModule } from './shape/shape.module';
 import { TeamModule } from './team/team.module';
+import { TaskModule } from './task/task.module';
 
 import * as dotenv from 'dotenv';
 
@@ -47,6 +48,7 @@ dotenv.config();
     MachineModule,
     ShapeModule,
     TeamModule,
+    TaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],

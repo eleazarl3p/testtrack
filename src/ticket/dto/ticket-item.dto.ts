@@ -1,10 +1,14 @@
+import { PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { UpdateTeamDto } from 'src/team/dto/update-team.dto';
 
 export class TicketItemDto {
   @IsNumber()
@@ -26,6 +30,11 @@ export class TicketItemDto {
   @IsOptional()
   @IsNumber()
   delivered: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateTeamDto)
+  team: UpdateTeamDto;
 }
 
 export class OtherItemDto {

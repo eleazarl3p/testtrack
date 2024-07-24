@@ -19,8 +19,8 @@ export class TeamService {
     }
   }
 
-  findAll() {
-    return `This action returns all team`;
+  async findAll() {
+    return await this.teamRepo.find();
   }
 
   findOne(id: number) {

@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -16,7 +17,7 @@ export enum ticketType {
 }
 
 @Entity()
-export class Ticket {
+export class Ticket extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 

@@ -12,6 +12,8 @@ import { Member } from 'src/member/entities/member.entity';
 import { OtherItem } from './entities/other-item.entity';
 import { MemberMaterialService } from 'src/member/membermaterial.service';
 import { JobService } from 'src/job/job.service';
+import { TicketItemDto } from './dto/ticket-item.dto';
+import { time } from 'console';
 
 @Injectable()
 export class TicketService {
@@ -41,18 +43,18 @@ export class TicketService {
 
     const ticket = await this.ticketRepo.save({ barcode, ...ticketDto });
 
-    ticketItems.forEach(async (ti) => {
+    for (const ti of ticketItems) {
       const tkm = this.tkmRepo.create(ti);
       tkm.ticket = ticket;
       tkm.member = { _id: ti.member_id } as Member;
       await this.tkmRepo.save(tkm);
-    });
+    }
 
-    otherItems.forEach(async (otm) => {
+    for (const otm of otherItems) {
       const otherItem = this.otmRepo.create(otm);
       otherItem.ticket = ticket;
       await this.otmRepo.save(otherItem);
-    });
+    }
 
     return await this.findOne(ticket.barcode);
   }
@@ -65,7 +67,7 @@ export class TicketService {
     const ticket = await this.ticketRepo.findOne({
       where: { barcode },
       relations: {
-        ticket_member: { member: true },
+        ticket_member: { member: true, team: true },
         other_items: true,
       },
     });
@@ -84,6 +86,7 @@ export class TicketService {
           piecemark: mb.member.piecemark,
           mem_desc: `${mb.member.mem_desc} ${mb.member.main_material}`,
           weight: Math.round(await this.mmService.getWeight(mb.member._id)),
+          team: mb.team,
         };
       }),
     );
@@ -103,6 +106,26 @@ export class TicketService {
 
   update(id: number, updateTicketDto: UpdateTicketDto) {
     return `This action updates a #${id} ticket`;
+  }
+
+  async updateTeam(_id: number, items: TicketItemDto[]) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { _id },
+      relations: { ticket_member: { team: true } },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('Ticket Not Found.');
+    }
+
+    for (const i in ticket.ticket_member) {
+      try {
+        ticket.ticket_member[i].team = items[i].team;
+        await ticket.ticket_member[i].save();
+      } catch (error) {}
+    }
+
+    return await ticket.save();
   }
 
   remove(id: number) {

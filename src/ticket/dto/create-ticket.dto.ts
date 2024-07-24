@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { OtherItemDto, TicketItemDto } from './ticket-item.dto';
 
-const alowedTicketType = ['erect', 'deliver'];
+const alowedTicketType = ['ERECT', 'DELIVER'];
 export class CreateTicketDto {
   @IsString()
   @IsIn(alowedTicketType, { each: true })
