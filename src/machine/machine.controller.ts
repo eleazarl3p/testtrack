@@ -40,7 +40,7 @@ export class MachineController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.machineService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.machineService.remove(id);
   }
 }

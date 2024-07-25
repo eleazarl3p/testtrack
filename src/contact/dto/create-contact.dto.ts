@@ -21,10 +21,6 @@ export class CreateContactDto {
   @IsString()
   last_name: string;
 
-  @IsOptional()
-  @IsString()
-  phone: string;
-
   @IsNotEmpty()
   @IsString()
   company: string;

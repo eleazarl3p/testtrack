@@ -48,7 +48,6 @@ export class ContactService {
   }
 
   async update(_id: number, updateContactDto: UpdateContactDto) {
-    console.log(updateContactDto);
     return await this.contactRepo.update({ _id }, { ...updateContactDto });
   }
 

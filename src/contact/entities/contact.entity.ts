@@ -18,9 +18,6 @@ export class Contact {
   last_name: string;
 
   @Column({ nullable: true })
-  phone: string;
-
-  @Column({ nullable: true })
   company: string;
 
   @Column({ type: 'enum', enum: contactRole })

@@ -59,15 +59,15 @@ export class TicketService {
     return await this.findOne(ticket.barcode);
   }
 
-  findAll() {
-    return `This action returns all ticket`;
+  async findAll() {
+    return this.ticketRepo.find({ select: ['barcode'] });
   }
 
   async findOne(barcode: string) {
     const ticket = await this.ticketRepo.findOne({
       where: { barcode },
       relations: {
-        ticket_member: { member: true, team: true },
+        ticket_member: { member: true },
         other_items: true,
       },
     });
@@ -92,13 +92,20 @@ export class TicketService {
     );
 
     const jobName = ticket.barcode.split('-')[1];
-    const job = await this.jobService.find(jobName);
-    ticket['job_name'] = job.job_name;
-    ticket['job_address'] =
-      `${job.address.street}, ${job.address.state} ${job.address.zip}`.replace(
-        '  ',
-        ' ',
-      );
+
+    try {
+      const job = await this.jobService.find(jobName);
+      ticket['job_name'] = job.job_name;
+      ticket['job_address'] =
+        `${job.address.street}, ${job.address.state} ${job.address.zip}`.replace(
+          '  ',
+          ' ',
+        );
+    } catch (error) {
+      ticket['job_name'] = jobName;
+      ticket['job_address'] = '...';
+    }
+
     ticket['shipping'] = null;
     delete ticket.ticket_member;
     return ticket;
@@ -111,7 +118,7 @@ export class TicketService {
   async updateTeam(_id: number, items: TicketItemDto[]) {
     const ticket = await this.ticketRepo.findOne({
       where: { _id },
-      relations: { ticket_member: { team: true } },
+      relations: { ticket_member: true },
     });
 
     if (!ticket) {

@@ -53,7 +53,7 @@ export class MachineService {
     return await machine.save();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} machine`;
+  async remove(_id: number) {
+    return await this.machineRepo.delete(_id);
   }
 }

@@ -16,6 +16,7 @@ import { MachineModule } from './machine/machine.module';
 import { ShapeModule } from './shape/shape.module';
 import { TeamModule } from './team/team.module';
 import { TaskModule } from './task/task.module';
+import { TruckModule } from './truck/truck.module';
 
 import * as dotenv from 'dotenv';
 
@@ -49,8 +50,16 @@ dotenv.config();
     ShapeModule,
     TeamModule,
     TaskModule,
+    TruckModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
+// type: 'mysql',
+// host: process.env.DB_HOST,
+// port: parseInt(process.env.DB_PORT, 10),
+// username: process.env.DB_USERNAME,
+// password: process.env.DB_PASSWORD,
+// database: process.env.DB_NAME,

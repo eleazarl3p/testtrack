@@ -21,7 +21,7 @@ export class ShapeService {
   }
 
   findAll() {
-    return this.shapeRepo.find();
+    return this.shapeRepo.find({ order: { _id: 'ASC' } });
   }
 
   findOne(id: number) {
