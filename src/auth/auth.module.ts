@@ -18,7 +18,7 @@ dotenv.config();
     }),
     JwtModule.register({
       secret: 'secret',
-      signOptions: { expiresIn: process.env.expire },
+      signOptions: { expiresIn: '1d' },
     }),
     UserModule,
   ],
