@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { MachineService } from './machine.service';
 import { CreateMachineDto } from './dto/create-machine.dto';
@@ -22,13 +24,21 @@ export class MachineController {
   }
 
   @Get()
-  findAll() {
-    return this.machineService.findAll();
+  findAll(@Query('paquetes') paquete: boolean) {
+    return this.machineService.findAll(paquete);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.machineService.findOne(+id);
+  }
+
+  @Get(':machine_id/:paquete_id/pending-tasks')
+  pendingTasks(
+    @Param('machine_id', ParseIntPipe) machine_id: number,
+    @Param('paquete_id', ParseIntPipe) paquete_id: number,
+  ) {
+    return this.machineService.pendingTasks(machine_id, paquete_id);
   }
 
   @Patch(':id')

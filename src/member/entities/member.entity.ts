@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { MemberMaterial } from './membermaterial.entity';
 import { TicketMember } from 'src/ticket/entities/tiketmember.entity';
+import { Task } from 'src/task/entities/task.entity';
 
 @Entity()
 export class Member extends BaseEntity {
@@ -45,4 +46,7 @@ export class Member extends BaseEntity {
 
   @OneToMany(() => TicketMember, (tm) => tm.member)
   ticket_member: TicketMember[];
+
+  @OneToMany(() => Task, (tsk) => tsk.member)
+  tasks: Task[];
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { Repository } from 'typeorm';
@@ -24,27 +28,18 @@ export class MemberService {
     }
   }
 
-  async findAll(job_id: number, paquete_id: string) {
+  async findAll(job_id: number, paquete_id: number) {
     let members: Member[];
-    if (paquete_id != undefined) {
-      try {
-        const pq_id = Number.parseInt(paquete_id);
-        members = await this.memberRepo.find({
-          where: {
-            paquete: { _id: pq_id, job: { _id: job_id } },
-          },
-          relations: { paquete: { job: true } },
-        });
-      } catch {
-        throw new BadRequestException('Invalid paquete id');
-      }
-    } else {
+
+    try {
       members = await this.memberRepo.find({
         where: {
-          paquete: { job: { _id: job_id } },
+          paquete: { _id: paquete_id, job: { _id: job_id } },
         },
         relations: { paquete: { job: true } },
       });
+    } catch {
+      throw new BadRequestException('Invalid paquete id');
     }
 
     return await Promise.all(
@@ -59,6 +54,13 @@ export class MemberService {
         };
       }),
     );
+  }
+
+  async findOne(_id: number): Promise<Member> {
+    return await this.memberRepo.findOne({
+      where: { _id },
+      relations: { member_material: true },
+    });
   }
 
   async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
@@ -84,6 +86,10 @@ export class MemberService {
       relations: { member_material: { material: true } },
     });
 
+    if (!member) {
+      throw new NotFoundException();
+    }
+
     const weight = await this.mmService.getWeight(member._id);
     return {
       main_material: member.main_material,
@@ -100,6 +106,28 @@ export class MemberService {
         };
       }),
     };
+  }
+
+  async memberNotYetAssigned(paquete_id: number) {
+    return await this.memberRepo
+      .createQueryBuilder('member')
+      .leftJoin('member.tasks', 'task')
+      .leftJoin('member.paquete', 'paquete')
+      .select('member._id', 'member_id')
+      .addSelect(
+        'CONCAT(member.mem_desc, " ", member.main_material)',
+        'details',
+      )
+      .addSelect('member.piecemark', 'piecemark')
+      .addSelect('member.quantity', 'total')
+      .addSelect(
+        'COALESCE(member.quantity - SUM(task.quantity), member.quantity)',
+        'pending',
+      )
+      .where('member.paquete_id = :paquete_id', { paquete_id })
+      .groupBy('member._id')
+      .having('COALESCE(SUM(task.quantity), 0) < member.quantity')
+      .getRawMany();
   }
 
   updateByCode(barcode: string, updateMemberDto: UpdateMemberDto) {

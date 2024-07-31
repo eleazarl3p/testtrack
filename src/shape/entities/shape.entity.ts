@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Machine } from 'src/machine/entities/machine.entity';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Shape {
@@ -7,4 +8,7 @@ export class Shape {
 
   @Column({ unique: true })
   name: string;
+
+  @ManyToMany(() => Machine, (mc) => mc.shapes)
+  machines: Machine[];
 }

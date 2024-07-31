@@ -60,7 +60,10 @@ export class TicketService {
   }
 
   async findAll() {
-    return this.ticketRepo.find({ select: ['barcode'] });
+    return this.ticketRepo.find({
+      select: ['barcode'],
+      order: { barcode: 'ASC' },
+    });
   }
 
   async findOne(barcode: string) {
@@ -113,26 +116,6 @@ export class TicketService {
 
   update(id: number, updateTicketDto: UpdateTicketDto) {
     return `This action updates a #${id} ticket`;
-  }
-
-  async updateTeam(_id: number, items: TicketItemDto[]) {
-    const ticket = await this.ticketRepo.findOne({
-      where: { _id },
-      relations: { ticket_member: true },
-    });
-
-    if (!ticket) {
-      throw new NotFoundException('Ticket Not Found.');
-    }
-
-    for (const i in ticket.ticket_member) {
-      try {
-        ticket.ticket_member[i].team = items[i].team;
-        await ticket.ticket_member[i].save();
-      } catch (error) {}
-    }
-
-    return await ticket.save();
   }
 
   remove(id: number) {

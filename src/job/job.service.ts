@@ -3,6 +3,7 @@ import { Job } from './entites/job.entity';
 import { BaseEntity, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateJobDto } from './dto/create-job.dto';
+import { Paquete } from 'src/paquete/entities/paquete.entity';
 
 @Injectable()
 export class JobService {
@@ -12,10 +13,14 @@ export class JobService {
   ) {}
 
   async findById(_id: number): Promise<Job> {
-    return await this.jobRepo.findOneOrFail({
+    const job = await this.jobRepo.findOneOrFail({
       where: { _id },
       relations: { paquetes: true },
+      order: { paquetes: { name: 'ASC' } },
     });
+
+    job.paquetes = this.alphabeticalOrder(job.paquetes);
+    return job;
   }
 
   async create(createJobDto: CreateJobDto): Promise<Job | null> {
@@ -65,5 +70,39 @@ export class JobService {
     try {
       return this.jobRepo.softDelete(_id);
     } catch (error) {}
+  }
+
+  alphabeticalOrder(paquetes: Paquete[]) {
+    return paquetes.sort((a, b) => {
+      const matchA = a.name.match(/^([A-Za-z]+)(\d+)?$/);
+      const matchB = b.name.match(/^([A-Za-z]+)(\d+)?$/);
+
+      const prefixA = matchA[1];
+      const prefixB = matchB[1];
+
+      const numA = matchA[2] ? parseInt(matchA[2]) : NaN;
+      const numB = matchB[2] ? parseInt(matchB[2]) : NaN;
+
+      // Compare prefixes alphabetically
+      if (prefixA !== prefixB) {
+        return prefixA.localeCompare(prefixB);
+      }
+
+      // If prefixes are the same, compare numeric parts
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB;
+      }
+
+      // If only one has a numeric part, the non-numeric one comes first
+      if (isNaN(numA) && !isNaN(numB)) {
+        return -1;
+      }
+      if (!isNaN(numA) && isNaN(numB)) {
+        return 1;
+      }
+
+      // If neither has a numeric part, they are equal in terms of sorting
+      return 0;
+    });
   }
 }

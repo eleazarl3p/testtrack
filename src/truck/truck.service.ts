@@ -22,7 +22,7 @@ export class TruckService {
   }
 
   async findAll() {
-    return await this.truckRepo.find();
+    return await this.truckRepo.find({ order: { barcode: 'ASC' } });
   }
 
   async findOne(name: string) {

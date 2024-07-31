@@ -15,6 +15,7 @@ import { Job } from 'src/job/entites/job.entity';
 import { MaterialService } from 'src/material/material.service';
 import { MemberMaterial } from 'src/member/entities/membermaterial.entity';
 import { MemberMaterialService } from 'src/member/membermaterial.service';
+import { Member } from 'src/member/entities/member.entity';
 
 @Injectable()
 export class PaqueteService {
@@ -97,6 +98,7 @@ export class PaqueteService {
     return await this.paqueteRepo.findOne({
       where: { _id },
       relations: { members: true, job: true },
+      order: { members: { piecemark: 'ASC' } },
     });
   }
 

@@ -1,4 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Task } from 'src/task/entities/task.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Team {
@@ -7,4 +15,13 @@ export class Team {
 
   @Column({ unique: true })
   name: string;
+
+  @OneToMany(() => Task, (task) => task.team)
+  tasks: Task[];
+
+  @DeleteDateColumn()
+  deleted_at: Date;
+
+  @CreateDateColumn()
+  created_at: Date;
 }

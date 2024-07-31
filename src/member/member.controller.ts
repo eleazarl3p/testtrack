@@ -8,7 +8,7 @@ export class MemberController {
   @Get(':jobid/')
   findAll(
     @Param('jobid', ParseIntPipe) jobid: number,
-    @Query('paqueteid') paqueteid: string,
+    @Query('paqueteid') paqueteid: number,
   ) {
     return this.memberService.findAll(jobid, paqueteid);
   }
@@ -19,5 +19,15 @@ export class MemberController {
     @Param('piecemark') piecemark: string,
   ) {
     return this.memberService.buildOfMaterials(paqueteid, piecemark);
+  }
+
+  @Get('not-yet-assigned/:pqtid')
+  memberNotYetAssigned(@Param('pqtid', ParseIntPipe) pqtid: number) {
+    return this.memberService.memberNotYetAssigned(pqtid);
+  }
+
+  @Get('one/:id')
+  findOne(@Param('id', ParseIntPipe) _id: number) {
+    return this.memberService.findOne(_id);
   }
 }

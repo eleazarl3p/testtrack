@@ -8,5 +8,6 @@ import { Shape } from './entities/shape.entity';
   imports: [TypeOrmModule.forFeature([Shape])],
   controllers: [ShapeController],
   providers: [ShapeService],
+  exports: [ShapeService],
 })
 export class ShapeModule {}

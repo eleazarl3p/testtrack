@@ -44,11 +44,6 @@ export class TicketController {
     return this.ticketService.update(+id, updateTicketDto);
   }
 
-  @Patch('teams/:id')
-  updateTeam(@Param('id', ParseIntPipe) id: number, @Body() { items }: any) {
-    return this.ticketService.updateTeam(id, items);
-  }
-
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.ticketService.remove(+id);

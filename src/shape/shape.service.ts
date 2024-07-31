@@ -20,8 +20,11 @@ export class ShapeService {
     }
   }
 
-  findAll() {
-    return this.shapeRepo.find({ order: { _id: 'ASC' } });
+  findAll(withRelations = false) {
+    return this.shapeRepo.find({
+      order: { _id: 'ASC' },
+      relations: withRelations ? { machines: true } : undefined,
+    });
   }
 
   findOne(id: number) {
