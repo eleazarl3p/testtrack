@@ -1,4 +1,5 @@
 import { MemberMaterial } from 'src/member/entities/membermaterial.entity';
+import { TaskItem } from 'src/task/entities/task-item.entity';
 import {
   Column,
   CreateDateColumn,
@@ -56,6 +57,9 @@ export class Material {
 
   @OneToMany(() => MemberMaterial, (mm) => mm.material)
   member_material: MemberMaterial[];
+
+  @OneToMany(() => TaskItem, (ti) => ti.material)
+  task_items: TaskItem[];
 
   @CreateDateColumn()
   created_at: Date;

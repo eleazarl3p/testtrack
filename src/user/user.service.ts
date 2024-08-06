@@ -30,8 +30,8 @@ export class UserService {
       relations: { level: { areas: true } },
     });
 
-    if (user == undefined) {
-      throw new NotFoundException();
+    if (!user) {
+      throw new NotFoundException('Invalid Credentials');
     }
 
     return user;
@@ -43,8 +43,8 @@ export class UserService {
       relations: { level: { areas: true } },
     });
 
-    if (user == undefined) {
-      throw new NotFoundException();
+    if (!user) {
+      throw new NotFoundException('Invalid Credentials');
     }
 
     return user;

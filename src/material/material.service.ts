@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,8 +30,12 @@ export class MaterialService {
     }
   }
 
-  async findAll() {
-    const materials = await this.materialRepo.find();
+  async findAll(jobId: number) {
+    const materials = await this.materialRepo.find({
+      where: {
+        member_material: { member: { paquete: { job: { _id: jobId } } } },
+      },
+    });
 
     const m = await Promise.all(
       materials.map(async (mat) => {
@@ -38,33 +46,35 @@ export class MaterialService {
     return m;
   }
 
-  async findOne(piecemark: string, job_name: string) {
-    const material = await this.findOneByPiecemarkAndBarcode(
-      piecemark,
-      job_name,
-    );
-
+  async findOne(piecemark: string, jobId: number) {
+    const material = await this.findOneByPiecemark(piecemark, jobId);
+    if (!material) {
+      throw new NotFoundException('Material Not Found');
+    }
     return await this.mmService.countMaterials(material._id);
   }
 
-  // findOneByPiecemark(piecemark: string) {
-  //   return this.materialRepo.findOne({
-  //     where: { piecemark },
-  //   });
-  // }
-
-  async findOneByPiecemarkAndBarcode(
-    piecemark: string,
-    job_name: string,
-  ): Promise<Material> {
-    return await this.materialRepo
-      .createQueryBuilder('material')
-      .where('material.piecemark = :piecemark', { piecemark })
-      .andWhere('material.barcode LIKE :job_name', {
-        job_name: `%${job_name}%`,
-      })
-      .getOne();
+  findOneByPiecemark(piecemark: string, jobId: number) {
+    return this.materialRepo.findOne({
+      where: {
+        piecemark,
+        member_material: { member: { paquete: { job: { _id: jobId } } } },
+      },
+    });
   }
+
+  // async findOneByPiecemarkAndBarcode(
+  //   piecemark: string,
+  //   job_name: string,
+  // ): Promise<Material> {
+  //   return await this.materialRepo
+  //     .createQueryBuilder('material')
+  //     .where('material.piecemark = :piecemark', { piecemark })
+  //     .andWhere('material.barcode LIKE :job_name', {
+  //       job_name: `%${job_name}%`,
+  //     })
+  //     .getOne();
+  // }
 
   async getBarcodesByPaquete(paqueteId: number): Promise<string[]> {
     const barcodes = await this.materialRepo

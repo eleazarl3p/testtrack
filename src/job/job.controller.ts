@@ -14,7 +14,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('models')
+@Controller('job')
 @UseGuards(AuthGuard('jwt'))
 export class JobController {
   constructor(private readonly jobService: JobService) {}

@@ -1,13 +1,17 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { MemberMaterial } from './entities/membermaterial.entity';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { TaskService } from 'src/task/task.service';
 
 @Injectable()
 export class MemberMaterialService {
   constructor(
     @InjectRepository(MemberMaterial)
     private readonly mmRepo: Repository<MemberMaterial>,
+
+    @Inject(forwardRef(() => TaskService))
+    private taskService: TaskService,
   ) {}
 
   async create(mm: MemberMaterial) {
@@ -34,25 +38,31 @@ export class MemberMaterialService {
   }
 
   async countMaterials(material_id: number) {
-    const materials = await this.mmRepo.find({
+    const mbmtrl = await this.mmRepo.find({
       where: { material_id },
-      relations: { material: true },
+      relations: { member: true, material: true },
     });
 
-    const updatedMaterials = {};
-    materials.map((mat) => {
-      if (!updatedMaterials[mat.material._id]) {
-        updatedMaterials[mat.material._id] = {
-          ...mat.material,
-          quantity: 0,
-          cuted: 0,
-        };
+    const materials = mbmtrl.map((mm) => {
+      return {
+        ...mm.material,
+        quantity: mm.quantity * mm.member.quantity,
+      };
+    });
+
+    const material = materials.reduce((acc, item) => {
+      if (!acc) {
+        return { ...item };
       }
+      return {
+        ...acc,
+        quantity: acc.quantity + item.quantity,
+      };
+    }, null);
 
-      updatedMaterials[mat.material._id].quantity += mat.quantity;
-      updatedMaterials[mat.material._id].cuted += mat.cuted;
-    });
-
-    return updatedMaterials[material_id];
+    return {
+      ...material,
+      cutted: await this.taskService.countCuttedMaterialOf(material._id),
+    };
   }
 }

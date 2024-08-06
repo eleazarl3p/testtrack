@@ -21,9 +21,6 @@ export class MemberMaterial extends BaseEntity {
   @Column()
   public quantity: number;
 
-  @Column({ default: 0 })
-  public cuted: number;
-
   @ManyToOne(() => Member, (member) => member.member_material)
   public member: Member;
 

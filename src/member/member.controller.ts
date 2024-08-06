@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { MemberService } from './member.service';
 
-@Controller('members')
+@Controller('member')
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 
@@ -13,21 +13,30 @@ export class MemberController {
     return this.memberService.findAll(jobid, paqueteid);
   }
 
-  @Get('build-of-materials/:pqid/:piecemark')
-  buildOfMaterials(
-    @Param('pqid', ParseIntPipe) paqueteid: number,
-    @Param('piecemark') piecemark: string,
-  ) {
-    return this.memberService.buildOfMaterials(paqueteid, piecemark);
-  }
-
-  @Get('not-yet-assigned/:pqtid')
+  @Get('not-yet-assigned-to-team/:pqtid')
   memberNotYetAssigned(@Param('pqtid', ParseIntPipe) pqtid: number) {
-    return this.memberService.memberNotYetAssigned(pqtid);
+    return this.memberService.memberNotYetAssignedToTeam(pqtid);
   }
 
-  @Get('one/:id')
-  findOne(@Param('id', ParseIntPipe) _id: number) {
-    return this.memberService.findOne(_id);
+  @Get('/one/:jobid/:id')
+  findOne(
+    @Param('jobid', ParseIntPipe) jobid: number,
+    @Param('id', ParseIntPipe) _id: number,
+  ) {
+    return this.memberService.findOne(jobid, _id);
+  }
+
+  @Get('available/area/:areaId/:jobId/:paqueteId')
+  available(
+    @Param('areaId', ParseIntPipe) areaId: number,
+    @Param('jobId', ParseIntPipe) jobId: number,
+    @Param('paqueteId', ParseIntPipe) paqueteId: number,
+  ) {
+    return this.memberService.availableForArea(areaId, jobId, paqueteId);
+  }
+
+  @Get('/test/:id')
+  test() {
+    return this.memberService.fullyCutMembers();
   }
 }

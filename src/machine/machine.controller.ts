@@ -14,7 +14,7 @@ import { MachineService } from './machine.service';
 import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineDto } from './dto/update-machine.dto';
 
-@Controller('machines')
+@Controller('machine')
 export class MachineController {
   constructor(private readonly machineService: MachineService) {}
 
@@ -24,7 +24,7 @@ export class MachineController {
   }
 
   @Get()
-  findAll(@Query('paquetes') paquete: boolean) {
+  findAll(@Query('paquetes', ParseBoolPipe) paquete: boolean) {
     return this.machineService.findAll(paquete);
   }
 
@@ -33,12 +33,12 @@ export class MachineController {
     return this.machineService.findOne(+id);
   }
 
-  @Get(':machine_id/:paquete_id/pending-tasks')
-  pendingTasks(
+  @Get(':machine_id/:paquete_id/tasks')
+  tasks(
     @Param('machine_id', ParseIntPipe) machine_id: number,
     @Param('paquete_id', ParseIntPipe) paquete_id: number,
   ) {
-    return this.machineService.pendingTasks(machine_id, paquete_id);
+    return this.machineService.tasks(machine_id, paquete_id);
   }
 
   @Patch(':id')

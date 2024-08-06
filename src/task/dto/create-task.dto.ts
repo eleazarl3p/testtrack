@@ -18,4 +18,7 @@ export class TaskDto {
 
   @IsNumber()
   team_id: number;
+
+  @IsNumber()
+  job_id: number;
 }

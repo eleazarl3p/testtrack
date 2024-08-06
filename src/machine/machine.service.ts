@@ -48,10 +48,13 @@ export class MachineService {
             paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
           }
         });
+
         return {
           _id: machine._id,
+          image: machine.image,
           name: machine.name,
           paquetes,
+          shapes: machine.shapes,
         };
       });
     }
@@ -60,18 +63,34 @@ export class MachineService {
   }
 
   async findOne(_id: number) {
-    return await this.machineRepo.findOne({
+    const machine = await this.machineRepo.findOne({
       where: { _id },
-      // relations: {
-      //   tasks_items: { task: true },
-      // },
+      relations: {
+        tasks_items: { task: true },
+      },
+      order: { tasks_items: { task: { priority: 'ASC' } } },
     });
+
+    return {
+      _id: machine._id,
+      image: machine.image,
+      name: machine.name,
+      shape: machine.shapes,
+      items: machine.tasks_items.map((ti) => {
+        return {
+          id: ti._id,
+          assigned: ti.assigned,
+          cutted: ti.cutted,
+          priority: ti.task.priority,
+        };
+      }),
+    };
   }
 
   async update(_id: number, updateMachineDto: UpdateMachineDto) {
     const { shapes, name } = updateMachineDto;
 
-    const machine = await this.findOne(_id);
+    const machine = await this.machineRepo.findOne({ where: { _id } });
 
     machine.shapes = [];
     shapes.forEach((sh) => {
@@ -83,14 +102,14 @@ export class MachineService {
     return await machine.save();
   }
 
-  async pendingTasks(_id: number, paquete_id: number) {
+  async tasks(_id: number, paquete_id: number) {
     const machine = await this.machineRepo.findOne({
       where: {
         _id,
         tasks_items: { task: { member: { paquete: { _id: paquete_id } } } },
       },
       relations: {
-        tasks_items: { material: true },
+        tasks_items: { material: true, task: true },
       },
     });
 
@@ -98,15 +117,15 @@ export class MachineService {
       throw new NotFoundException();
     }
 
-    delete machine.shapes;
+    //delete machine.shapes;
 
     return machine.tasks_items.map((ti) => {
       return {
+        _id: ti._id,
         assigned: ti.assigned,
         cutted: ti.cutted,
-        piecemark: ti.material.piecemark,
-        section: ti.material.section,
-        ready: Math.round((ti.cutted / ti.assigned) * 100),
+        material: ti.material,
+        priority: ti.task.priority,
       };
     });
   }

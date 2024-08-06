@@ -11,6 +11,7 @@ import {
 import { MemberMaterial } from './membermaterial.entity';
 import { TicketMember } from 'src/ticket/entities/tiketmember.entity';
 import { Task } from 'src/task/entities/task.entity';
+import { MemberArea } from './memberarea.entity';
 
 @Entity()
 export class Member extends BaseEntity {
@@ -49,4 +50,7 @@ export class Member extends BaseEntity {
 
   @OneToMany(() => Task, (tsk) => tsk.member)
   tasks: Task[];
+
+  @OneToMany(() => MemberArea, (ma) => ma.member)
+  member_area: MemberArea[];
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +19,8 @@ export class TaskService {
     @InjectRepository(TaskItem)
     private readonly taskItemRepo: Repository<TaskItem>,
 
-    private readonly memberService: MemberService,
+    @Inject(forwardRef(() => MemberService))
+    private memberService: MemberService,
 
     private readonly shapeService: ShapeService,
   ) {}
@@ -37,16 +38,17 @@ export class TaskService {
         team_id,
         assigned,
         piecemark,
-        paquete_id,
         priority,
+        job_id,
       } of createTaskDto) {
         let member = undefined;
 
         try {
-          member = await this.memberService.buildOfMaterials(
-            paquete_id,
-            piecemark,
-          );
+          member = await this.memberService.findOne(job_id, member_id);
+          // member = await this.memberService.buildOfMaterials(
+          //   paquete_id,
+          //   piecemark,
+          // );
         } catch (error) {
           notAssignedMember.push({
             member_id,
@@ -82,14 +84,10 @@ export class TaskService {
             const savedTaskMachine = await taskMachine.save();
             machineTasks.push(savedTaskMachine);
           } else {
-            // notAssignedMaterial.push({
-            //   piecemark,
-            //   material: { _id: material._id, section: material.section },
-            // });
             notAssignedMember.push({
               piecemark,
               quantity: 0,
-              reason: `No machine available to cut materila : ${material.section}`,
+              reason: `No machine available to cut material : ${material.section}`,
             });
 
             await this.taskRepo.delete(savedTask._id);
@@ -111,6 +109,13 @@ export class TaskService {
 
   async findAll() {
     return this.taskRepo.find({ relations: { team: true } });
+  }
+
+  async countCuttedMaterialOf(materialId: number) {
+    const materials = await this.taskItemRepo.find({
+      where: { material: { _id: materialId } },
+    });
+    return materials.reduce((acc, mat) => (acc += mat.cutted), 0);
   }
 
   findOne(id: number) {

@@ -58,12 +58,71 @@ export class TicketService {
 
     return await this.findOne(ticket.barcode);
   }
-
   async findAll() {
     return this.ticketRepo.find({
       select: ['barcode'],
       order: { barcode: 'ASC' },
     });
+  }
+
+  async findAllByJob(job_name: string) {
+    const tickets_ = await this.ticketRepo
+      .createQueryBuilder('ticket')
+      .select('ticket._id')
+      .addSelect('ticket.barcode')
+      .addSelect('ticket.ticket_type')
+      .addSelect('ticket.contact')
+      .addSelect('ticket.created_at')
+      .leftJoinAndSelect('ticket.ticket_member', 'items')
+      .leftJoinAndSelect('items.member', 'members')
+      .where('ticket.barcode LIKE :bc', { bc: `TI-${job_name}-%` })
+      .getMany();
+
+    if (tickets_.length == 0) {
+      return [];
+    }
+
+    let job_address = '...';
+    try {
+      const job = await this.jobService.find(job_name);
+
+      job_address =
+        `${job.address.street}, ${job.address.state} ${job.address.zip}`.replace(
+          '  ',
+          ' ',
+        );
+    } catch (error) {}
+
+    const tickets = await Promise.all(
+      tickets_.map(async (ticket) => {
+        const items = await Promise.all(
+          Object.values(ticket.ticket_member).map(async (mb) => {
+            return {
+              quantity: mb.quantity,
+              loaded: mb.loaded,
+              delivered: mb.delivered,
+              piecemark: mb.member.piecemark,
+              mem_desc: `${mb.member.mem_desc} ${mb.member.main_material}`,
+              weight: Math.round(await this.mmService.getWeight(mb.member._id)),
+              team: mb.team,
+            };
+          }),
+        );
+        return {
+          _id: ticket._id,
+          ticket_type: ticket.ticket_type,
+          barcode: ticket.barcode,
+          contact: ticket.contact,
+          created_at: ticket.created_at,
+          other_items: [],
+          items,
+          job_name,
+          job_address,
+        };
+      }),
+    );
+
+    return tickets;
   }
 
   async findOne(barcode: string) {
@@ -125,20 +184,25 @@ export class TicketService {
   async availableMembers(jobid: number) {
     const members = await this.memberService.findAll(jobid, undefined);
 
-    const filteredMembers = await Promise.all(
-      members.map(async (mb) => {
-        const count = await this.countMemberTicket(mb._id);
-        if (mb.quantity > count) {
-          const available = mb.quantity - count;
-          delete mb.quantity;
-          return {
-            ...mb,
-            available,
-          };
-        }
-      }),
-    );
-    return filteredMembers.filter((m) => m != null);
+    const filteredMembers = (
+      await Promise.all(
+        members.map(async (mb) => {
+          const count = await this.countMemberTicket(mb._id);
+          if (mb.quantity > count) {
+            const available = mb.quantity - count;
+            delete mb.quantity;
+            return {
+              ...mb,
+              available,
+            };
+          }
+
+          return null;
+        }),
+      )
+    ).filter(Boolean);
+
+    return filteredMembers;
   }
 
   async countMemberTicket(member_id: number) {

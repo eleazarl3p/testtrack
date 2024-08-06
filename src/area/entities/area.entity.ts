@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { MemberArea } from 'src/member/entities/memberarea.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Area {
@@ -8,8 +9,14 @@ export class Area {
   @Column({ unique: true })
   name: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   barcode: string;
+
+  @Column({ default: 'xmark' })
+  image: string;
+
+  @OneToMany(() => MemberArea, (ma) => ma.area)
+  member_area: MemberArea[];
 
   // @OneToMany(() => MaterialHistory, (mh) => mh.area)
   // mat_history: MaterialHistory[];

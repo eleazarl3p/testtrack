@@ -62,11 +62,10 @@ export class PaqueteService {
         ppk.members.push(newMember);
 
         for (const mat of member.materials) {
-          let material =
-            await this.materialService.findOneByPiecemarkAndBarcode(
-              mat.piecemark,
-              job.job_name,
-            );
+          let material = await this.materialService.findOneByPiecemark(
+            mat.piecemark,
+            job._id,
+          );
 
           if (material == null) {
             mat['barcode'] =
@@ -126,11 +125,10 @@ export class PaqueteService {
         }
 
         for (const mat of member.materials) {
-          let material =
-            await this.materialService.findOneByPiecemarkAndBarcode(
-              mat.piecemark,
-              paquete.job.job_name,
-            );
+          let material = await this.materialService.findOneByPiecemark(
+            mat.piecemark,
+            paquete.job._id,
+          );
 
           if (!material) {
             mat['barcode'] =

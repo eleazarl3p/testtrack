@@ -36,31 +36,63 @@ export class MemberService {
         where: {
           paquete: { _id: paquete_id, job: { _id: job_id } },
         },
-        relations: { paquete: { job: true } },
+        relations: {
+          paquete: { job: true },
+          member_material: { material: true },
+        },
       });
     } catch {
       throw new BadRequestException('Invalid paquete id');
     }
 
     return await Promise.all(
-      members.map(async (mb) => {
-        const weight = await this.mmService.getWeight(mb._id);
+      members.map(async (member) => {
+        const weight = await this.mmService.getWeight(member._id);
         return {
-          _id: mb._id,
-          piecemark: mb.piecemark,
-          mem_desc: `${mb.mem_desc} ${mb.main_material}`,
-          quantity: mb.quantity,
+          _id: member._id,
+          barcode: member.barcode,
+          piecemark: member.piecemark,
+          mem_desc: `${member.mem_desc} ${member.main_material}`,
+          quantity: member.quantity,
           weight: Math.round(weight),
+          materials: member.member_material.map((mat) => {
+            return {
+              quantity: mat.quantity,
+              // cutted: mat.cutted,
+              ...mat.material,
+            };
+          }),
         };
       }),
     );
   }
 
-  async findOne(_id: number): Promise<Member> {
-    return await this.memberRepo.findOne({
-      where: { _id },
-      relations: { member_material: true },
+  async findOne(jobid: number, _id: number) {
+    const member = await this.memberRepo.findOne({
+      where: { _id, paquete: { job: { _id: jobid } } },
+      relations: { member_material: { material: true }, paquete: true },
     });
+
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    const weight = await this.mmService.getWeight(member._id);
+    return {
+      _id: member._id,
+      barcode: member.barcode,
+      piecemark: member.piecemark,
+      mem_desc: `${member.mem_desc} ${member.main_material}`,
+      quantity: member.quantity,
+      weight: Math.round(weight),
+      materials: member.member_material.map((mat) => {
+        return {
+          quantity: mat.quantity,
+          // cutted: mat.cutted,
+          ...mat.material,
+        };
+      }),
+    };
   }
 
   async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
@@ -80,35 +112,7 @@ export class MemberService {
     return barcodes.map((result) => result.barcode);
   }
 
-  async buildOfMaterials(paquete_id: number, piecemark: string) {
-    const member = await this.memberRepo.findOne({
-      where: { piecemark, paquete: { _id: paquete_id } },
-      relations: { member_material: { material: true } },
-    });
-
-    if (!member) {
-      throw new NotFoundException();
-    }
-
-    const weight = await this.mmService.getWeight(member._id);
-    return {
-      main_material: member.main_material,
-      piecemark: member.piecemark,
-      barcode: member.barcode,
-      mem_desc: member.mem_desc,
-      quantity: member.quantity,
-      weight: Math.round(weight),
-      materials: member.member_material.map((mat) => {
-        return {
-          quantity: mat.quantity,
-          cuted: mat.cuted,
-          ...mat.material,
-        };
-      }),
-    };
-  }
-
-  async memberNotYetAssigned(paquete_id: number) {
+  async memberNotYetAssignedToTeam(paquete_id: number) {
     return await this.memberRepo
       .createQueryBuilder('member')
       .leftJoin('member.tasks', 'task')
@@ -128,6 +132,76 @@ export class MemberService {
       .groupBy('member._id')
       .having('COALESCE(SUM(task.quantity), 0) < member.quantity')
       .getRawMany();
+  }
+
+  async availableForArea(areaId: number, job_id: number, paqueteId: number) {
+    const data = await this.findAll(job_id, paqueteId);
+
+    // const members = data.filter((member) =>
+    //   member.materials.every(
+    //     (material) => material.cutted === material.quantity,
+    //   ),
+    // );
+
+    return data;
+  }
+
+  async fullyCutMembers() {
+    const members = await this.memberRepo.find({
+      // where: { _id: 137 },
+      relations: {
+        member_material: true,
+        tasks: { items: true },
+      },
+    });
+
+    const groupCutted = members.map((member) => {
+      const materials = member.member_material.map((mm, index) => {
+        return {
+          //...mm.material,
+          quantity: mm.quantity,
+          cutted: member.tasks.reduce(
+            (acc, task) => (acc += task.items[index].cutted),
+            0,
+          ),
+        };
+      });
+
+      return {
+        _id: member._id,
+        piecemark: member.piecemark,
+        barcode: member.barcode,
+        mem_desc: `${member.mem_desc} ${member.main_material}`,
+        quantity: member.quantity,
+        materials,
+      };
+    });
+    //return members;
+    return groupCutted
+      .map((member) => {
+        let count = 0;
+        let done = false;
+        for (let icount = 1; icount <= member.quantity; icount++) {
+          for (let index = 1; index < member.materials.length + 1; index++) {
+            const cutted_ = member.materials[index - 1].cutted;
+            const qt = member.materials[index - 1].quantity * icount;
+            if (qt > cutted_) {
+              count = icount - 1;
+              done = true;
+              break;
+            }
+          }
+          if (done) break;
+        }
+        return {
+          _id: member._id,
+          piecemark: member.piecemark,
+          barcode: member.barcode,
+          mem_desc: member.mem_desc,
+          count,
+        };
+      })
+      .filter((mm) => mm.count > 0);
   }
 
   updateByCode(barcode: string, updateMemberDto: UpdateMemberDto) {
