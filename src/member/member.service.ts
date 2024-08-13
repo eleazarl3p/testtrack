@@ -202,25 +202,30 @@ export class MemberService {
   }
 
   async memberNotYetAssignedToTeam(paquete_id: number) {
-    return await this.memberRepo
-      .createQueryBuilder('member')
-      .leftJoin('member.tasks', 'task')
-      .leftJoin('member.paquete', 'paquete')
-      .select('member._id', 'member_id')
-      .addSelect(
-        'CONCAT(member.mem_desc, " ", member.main_material)',
-        'details',
-      )
-      .addSelect('member.piecemark', 'piecemark')
-      .addSelect('member.quantity', 'total')
-      .addSelect(
-        'COALESCE(member.quantity - SUM(task.quantity), member.quantity)',
-        'pending',
-      )
-      .where('member.paquete_id = :paquete_id', { paquete_id })
-      .groupBy('member._id')
-      .having('COALESCE(SUM(task.quantity), 0) < member.quantity')
-      .getRawMany();
+    try {
+      return await this.memberRepo
+        .createQueryBuilder('member')
+        .leftJoin('member.tasks', 'task')
+        .leftJoin('member.paquete', 'paquete')
+        .select('member._id', 'member_id')
+        .addSelect(
+          'CONCAT(member.mem_desc, " ", member.main_material)',
+          'details',
+        )
+        .addSelect('member.piecemark', 'piecemark')
+        .addSelect('member.quantity', 'total')
+        .addSelect(
+          'COALESCE(member.quantity - SUM(task.quantity), member.quantity)',
+          'pending',
+        )
+        .where('member.paquete_id = :paquete_id', { paquete_id })
+        .groupBy('member._id')
+        .having('COALESCE(SUM(task.quantity), 0) < member.quantity')
+        .getRawMany();
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error.code);
+    }
   }
 
   // async availableForArea(areaId: number, job_id: number, paqueteId: number) {
