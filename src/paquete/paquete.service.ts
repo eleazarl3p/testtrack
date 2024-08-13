@@ -125,7 +125,8 @@ export class PaqueteService {
           let material = await this.materialService.findOne(barcode);
 
           if (!material) {
-            mat['barcode'] = material = await this.materialService.create(mat);
+            mat['barcode'] = barcode;
+            material = await this.materialService.create(mat);
           }
 
           const mm = await this.mmService.findOne(
