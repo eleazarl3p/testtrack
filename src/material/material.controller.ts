@@ -5,16 +5,13 @@ import { MaterialService } from './material.service';
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
 
-  @Get(':jobid/')
+  @Get('all/:jobid/')
   findAll(@Param('jobid', ParseIntPipe) jobid: number) {
     return this.materialService.findAll(jobid);
   }
 
-  @Get(':jobid/:piecemark')
-  findOne(
-    @Param('jobid', ParseIntPipe) jobId: number,
-    @Param('piecemark') piecemark: string,
-  ) {
-    return this.materialService.findOne(piecemark, jobId);
+  @Get('one/:barcode')
+  findOne(@Param('barcode') barcode: string) {
+    return this.materialService.findOne(barcode);
   }
 }

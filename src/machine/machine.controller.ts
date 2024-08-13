@@ -34,11 +34,12 @@ export class MachineController {
   }
 
   @Get(':machine_id/:paquete_id/tasks')
-  tasks(
+  async pendingtasks(
     @Param('machine_id', ParseIntPipe) machine_id: number,
     @Param('paquete_id', ParseIntPipe) paquete_id: number,
+    @Query('pending', ParseBoolPipe) pending: boolean,
   ) {
-    return this.machineService.tasks(machine_id, paquete_id);
+    return await this.machineService.tasks(machine_id, paquete_id, pending);
   }
 
   @Patch(':id')

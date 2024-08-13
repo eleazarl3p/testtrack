@@ -9,6 +9,9 @@ import { Repository } from 'typeorm';
 import { Member } from './entities/member.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MemberMaterialService } from './membermaterial.service';
+import { MemberAreaService } from './member-area.service';
+import { MemberToAreaDto } from './dto/member-to-area.dto';
+import { MemberMaterial } from './entities/membermaterial.entity';
 
 @Injectable()
 export class MemberService {
@@ -17,6 +20,10 @@ export class MemberService {
     private readonly memberRepo: Repository<Member>,
 
     private readonly mmService: MemberMaterialService,
+
+    private readonly maService: MemberAreaService,
+
+    //private readonly weldingService: WeldingService,
   ) {}
 
   async create(createMemberDto: CreateMemberDto) {
@@ -39,6 +46,12 @@ export class MemberService {
         relations: {
           paquete: { job: true },
           member_material: { material: true },
+          tasks: { items: { material: true } },
+          member_area: { area: true },
+        },
+        order: {
+          tasks: { items: { last_update: 'asc' } },
+          member_area: { created_at: 'asc' },
         },
       });
     } catch {
@@ -48,6 +61,34 @@ export class MemberService {
     return await Promise.all(
       members.map(async (member) => {
         const weight = await this.mmService.getWeight(member._id);
+        const groupedMaterials = member.member_material.reduce(
+          (acc, mm) => {
+            if (!acc[mm.material.piecemark]) {
+              acc[mm.material.piecemark] = {
+                ...mm.material,
+                quantity: 0,
+                cutted: 0,
+              };
+            }
+            acc[mm.material.piecemark].quantity += mm.quantity;
+            return acc;
+          },
+          {} as Record<string, any>,
+        );
+
+        if (member.tasks.length) {
+          for (const task of member.tasks) {
+            for (const item of task.items) {
+              const piecemark = item.material.piecemark;
+              if (groupedMaterials[piecemark]) {
+                groupedMaterials[piecemark].cutted += item.cutted;
+                groupedMaterials[piecemark]['last_update'] = item.last_update;
+              }
+            }
+          }
+        }
+
+        member.member_material = Object.values(groupedMaterials);
         return {
           _id: member._id,
           barcode: member.barcode,
@@ -55,13 +96,8 @@ export class MemberService {
           mem_desc: `${member.mem_desc} ${member.main_material}`,
           quantity: member.quantity,
           weight: Math.round(weight),
-          materials: member.member_material.map((mat) => {
-            return {
-              quantity: mat.quantity,
-              // cutted: mat.cutted,
-              ...mat.material,
-            };
-          }),
+          materials: member.member_material,
+          areas: member.member_area,
         };
       }),
     );
@@ -70,7 +106,16 @@ export class MemberService {
   async findOne(jobid: number, _id: number) {
     const member = await this.memberRepo.findOne({
       where: { _id, paquete: { job: { _id: jobid } } },
-      relations: { member_material: { material: true }, paquete: true },
+      relations: {
+        member_material: { material: true },
+        paquete: true,
+        tasks: { items: { material: true } },
+        member_area: { area: true },
+      },
+      order: {
+        tasks: { items: { last_update: 'asc' } },
+        member_area: { created_at: 'asc' },
+      },
     });
 
     if (!member) {
@@ -78,21 +123,65 @@ export class MemberService {
     }
 
     const weight = await this.mmService.getWeight(member._id);
-    return {
+
+    const groupedMaterials = member.member_material.reduce(
+      (acc, mm) => {
+        if (!acc[mm.material.piecemark]) {
+          acc[mm.material.piecemark] = {
+            ...mm.material,
+            quantity: 0,
+            cutted: 0,
+          };
+        }
+        acc[mm.material.piecemark].quantity += mm.quantity;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
+
+    if (member.tasks.length) {
+      for (const task of member.tasks) {
+        for (const item of task.items) {
+          const piecemark = item.material.piecemark;
+          if (groupedMaterials[piecemark]) {
+            groupedMaterials[piecemark].cutted += item.cutted;
+
+            groupedMaterials[piecemark]['last_update'] = item.last_update;
+          }
+        }
+      }
+    }
+
+    member.member_material = Object.values(groupedMaterials);
+    const newMember = {
       _id: member._id,
       barcode: member.barcode,
       piecemark: member.piecemark,
       mem_desc: `${member.mem_desc} ${member.main_material}`,
       quantity: member.quantity,
       weight: Math.round(weight),
-      materials: member.member_material.map((mat) => {
-        return {
-          quantity: mat.quantity,
-          // cutted: mat.cutted,
-          ...mat.material,
-        };
-      }),
+      materials: member.member_material,
+      areas: member.member_area,
     };
+
+    const ma = newMember.areas.reduce(
+      (acc, ma) => {
+        if (!acc[ma.area._id]) {
+          acc[ma.area._id] = {
+            ...ma,
+            quantity: 0,
+          };
+        }
+
+        acc[ma.area._id].quantity += ma.quantity;
+        acc[ma.area._id].created_at = ma.created_at;
+
+        return acc;
+      },
+      {} as Record<number, any>,
+    );
+    newMember.areas = Object.values(ma);
+    return newMember;
   }
 
   async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
@@ -134,74 +223,80 @@ export class MemberService {
       .getRawMany();
   }
 
-  async availableForArea(areaId: number, job_id: number, paqueteId: number) {
-    const data = await this.findAll(job_id, paqueteId);
+  // async availableForArea(areaId: number, job_id: number, paqueteId: number) {
+  //   const data = await this.findAll(job_id, paqueteId);
 
-    // const members = data.filter((member) =>
-    //   member.materials.every(
-    //     (material) => material.cutted === material.quantity,
-    //   ),
-    // );
+  //   // const members = data.filter((member) =>
+  //   //   member.materials.every(
+  //   //     (material) => material.cutted === material.quantity,
+  //   //   ),
+  //   // );
 
-    return data;
+  //   return data;
+  // }
+
+  async availableMembers(jobId: number, areaId: number) {
+    const members = await this.findAll(jobId, null);
+    const fullyCutted = members
+      .map((member) => {
+        const T = [];
+        member.materials.forEach((material) => {
+          const tn = Math.floor(material['cutted'] / material.quantity);
+          T.push(tn);
+        });
+
+        if (T.length) {
+          const readyToWeldOrWelded = Math.min(...T);
+
+          if (readyToWeldOrWelded > 0) {
+            member.quantity = readyToWeldOrWelded;
+            return member;
+          }
+        }
+      })
+      .filter(Boolean);
+
+    const groupArea = fullyCutted.map((member) => {
+      const ma = member.areas.reduce(
+        (acc, ma) => {
+          if (!acc[ma.area._id]) {
+            acc[ma.area._id] = {
+              ...ma,
+              quantity: 0,
+            };
+          }
+
+          acc[ma.area._id].quantity += ma.quantity;
+          acc[ma.area._id].created_at = ma.created_at;
+
+          return acc;
+        },
+        {} as Record<number, any>,
+      );
+      member.areas = Object.values(ma);
+      return member;
+    });
+
+    return groupArea
+      .map((mm) => {
+        const am = mm.areas.filter((a) => a.area._id == areaId);
+        if (!am) {
+          return mm;
+        }
+
+        const totToArea = am.reduce((acc, ar) => (acc += ar.quantity), 0);
+        if (totToArea < mm.quantity) {
+          mm.quantity -= totToArea;
+          return mm;
+        }
+      })
+      .filter(Boolean);
   }
 
-  async fullyCutMembers() {
-    const members = await this.memberRepo.find({
-      // where: { _id: 137 },
-      relations: {
-        member_material: true,
-        tasks: { items: true },
-      },
-    });
-
-    const groupCutted = members.map((member) => {
-      const materials = member.member_material.map((mm, index) => {
-        return {
-          //...mm.material,
-          quantity: mm.quantity,
-          cutted: member.tasks.reduce(
-            (acc, task) => (acc += task.items[index].cutted),
-            0,
-          ),
-        };
-      });
-
-      return {
-        _id: member._id,
-        piecemark: member.piecemark,
-        barcode: member.barcode,
-        mem_desc: `${member.mem_desc} ${member.main_material}`,
-        quantity: member.quantity,
-        materials,
-      };
-    });
-    //return members;
-    return groupCutted
-      .map((member) => {
-        let count = 0;
-        let done = false;
-        for (let icount = 1; icount <= member.quantity; icount++) {
-          for (let index = 1; index < member.materials.length + 1; index++) {
-            const cutted_ = member.materials[index - 1].cutted;
-            const qt = member.materials[index - 1].quantity * icount;
-            if (qt > cutted_) {
-              count = icount - 1;
-              done = true;
-              break;
-            }
-          }
-          if (done) break;
-        }
-        return {
-          _id: member._id,
-          piecemark: member.piecemark,
-          barcode: member.barcode,
-          mem_desc: member.mem_desc,
-          count,
-        };
-      })
-      .filter((mm) => mm.count > 0);
+  async moveToArea(areaId: number, membertoareaDto: MemberToAreaDto[]) {
+    for (const { id, quantity } of membertoareaDto) {
+      this.maService.create(areaId, id, quantity);
+    }
   }
 
   updateByCode(barcode: string, updateMemberDto: UpdateMemberDto) {

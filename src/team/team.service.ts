@@ -125,7 +125,7 @@ export class TeamService {
             return {
               assigned: itm.assigned,
               cuted: itm.cutted,
-              mark: itm.material.mark,
+              mark: itm.material.piecemark,
               section: itm.material.section,
               machine: itm.machine.name,
             };

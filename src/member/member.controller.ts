@@ -1,11 +1,21 @@
-import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  ParseIntPipe,
+  Post,
+  Body,
+} from '@nestjs/common';
 import { MemberService } from './member.service';
+import { MemberToAreaDto } from './dto/member-to-area.dto';
+import { ValidateMemberAreaPipe } from './dto/validatea-ma-pipe';
 
 @Controller('member')
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 
-  @Get(':jobid/')
+  @Get('job/:jobid/')
   findAll(
     @Param('jobid', ParseIntPipe) jobid: number,
     @Query('paqueteid') paqueteid: number,
@@ -26,17 +36,20 @@ export class MemberController {
     return this.memberService.findOne(jobid, _id);
   }
 
-  @Get('available/area/:areaId/:jobId/:paqueteId')
-  available(
+  @Post('/area/:areaId')
+  async moveToArea(
     @Param('areaId', ParseIntPipe) areaId: number,
-    @Param('jobId', ParseIntPipe) jobId: number,
-    @Param('paqueteId', ParseIntPipe) paqueteId: number,
+    @Body(new ValidateMemberAreaPipe()) membertoAreaDto: MemberToAreaDto[],
   ) {
-    return this.memberService.availableForArea(areaId, jobId, paqueteId);
+    await this.memberService.moveToArea(areaId, membertoAreaDto);
   }
 
-  @Get('/test/:id')
-  test() {
-    return this.memberService.fullyCutMembers();
+  @Get('available/area/:jobId/:areaId')
+  async availableMembers(
+    @Param('jobId', ParseIntPipe) jobId: number,
+    @Param('areaId', ParseIntPipe) areaId: number,
+  ) {
+    const members = await this.memberService.availableMembers(jobId, areaId);
+    return members;
   }
 }

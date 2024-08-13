@@ -46,22 +46,26 @@ export class MaterialService {
     return m;
   }
 
-  async findOne(piecemark: string, jobId: number) {
-    const material = await this.findOneByPiecemark(piecemark, jobId);
-    if (!material) {
-      throw new NotFoundException('Material Not Found');
-    }
-    return await this.mmService.countMaterials(material._id);
+  async findOne(barcode: string): Promise<Material> {
+    return await this.materialRepo.findOne({ where: { barcode } });
   }
+  // async findOne(piecemark: string, jobId: number) {
+  //   const material = await this.findOneByPiecemark(piecemark, jobId);
+  //   if (!material) {
+  //     throw new NotFoundException('Material Not Found');
+  //   }
+  //   return await this.mmService.countMaterials(material._id);
+  // }
 
-  findOneByPiecemark(piecemark: string, jobId: number) {
-    return this.materialRepo.findOne({
-      where: {
-        piecemark,
-        member_material: { member: { paquete: { job: { _id: jobId } } } },
-      },
-    });
-  }
+  // findOneByPiecemark(piecemark: string, jobId: number) {
+  //   return this.materialRepo.findOne({
+  //     where: {
+  //       piecemark,
+  //       member_material: { member: { paquete: { job: { _id: jobId } } } },
+  //     },
+  //     relations: { member_material: { member: { paquete: { job: true } } } },
+  //   });
+  // }
 
   // async findOneByPiecemarkAndBarcode(
   //   piecemark: string,

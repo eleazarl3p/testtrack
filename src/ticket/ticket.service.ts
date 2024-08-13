@@ -14,6 +14,8 @@ import { MemberMaterialService } from 'src/member/membermaterial.service';
 import { JobService } from 'src/job/job.service';
 import { TicketItemDto } from './dto/ticket-item.dto';
 import { time } from 'console';
+import { LoadTicketDto } from './dto/load-ticket.dto';
+import { DeliveredTicketDto } from './dto/deliver-ticket.dto';
 
 @Injectable()
 export class TicketService {
@@ -70,11 +72,16 @@ export class TicketService {
       .createQueryBuilder('ticket')
       .select('ticket._id')
       .addSelect('ticket.barcode')
+      .addSelect('ticket.loaded_at')
+      .addSelect('ticket.delivered_at')
       .addSelect('ticket.ticket_type')
       .addSelect('ticket.contact')
       .addSelect('ticket.created_at')
       .leftJoinAndSelect('ticket.ticket_member', 'items')
       .leftJoinAndSelect('items.member', 'members')
+      .leftJoinAndSelect('ticket.other_items', 'other_items')
+      .leftJoinAndSelect('ticket.comments', 'comments')
+      .leftJoinAndSelect('comments.user', 'user')
       .where('ticket.barcode LIKE :bc', { bc: `TI-${job_name}-%` })
       .getMany();
 
@@ -98,6 +105,7 @@ export class TicketService {
         const items = await Promise.all(
           Object.values(ticket.ticket_member).map(async (mb) => {
             return {
+              _id: mb._id,
               quantity: mb.quantity,
               loaded: mb.loaded,
               delivered: mb.delivered,
@@ -110,12 +118,25 @@ export class TicketService {
         );
         return {
           _id: ticket._id,
+          loaded_at: ticket.loaded_at,
           ticket_type: ticket.ticket_type,
+          delivered_at: ticket.delivered_at,
           barcode: ticket.barcode,
           contact: ticket.contact,
           created_at: ticket.created_at,
-          other_items: [],
+          other_items: ticket.other_items,
           items,
+          tcomments: ticket.comments.map((tcomment) => {
+            return {
+              _id: tcomment._id,
+              details: tcomment.details,
+              user: {
+                username: tcomment.user.username,
+                fullname: tcomment.user.fullname(),
+              },
+              created_at: tcomment.created_at,
+            };
+          }),
           job_name,
           job_address,
         };
@@ -131,6 +152,7 @@ export class TicketService {
       relations: {
         ticket_member: { member: true },
         other_items: true,
+        comments: { user: true },
       },
     });
 
@@ -142,6 +164,7 @@ export class TicketService {
     ticket['items'] = await Promise.all(
       Object.values(ticket.ticket_member).map(async (mb) => {
         return {
+          _id: mb._id,
           quantity: mb.quantity,
           loaded: mb.loaded,
           delivered: mb.delivered,
@@ -168,7 +191,18 @@ export class TicketService {
       ticket['job_address'] = '...';
     }
 
-    ticket['shipping'] = null;
+    (ticket['tcomments'] = ticket.comments.map((tcomment) => {
+      return {
+        _id: tcomment._id,
+        details: tcomment.details,
+        user: {
+          username: tcomment.user.username,
+          fullname: tcomment.user.fullname(),
+        },
+        created_at: tcomment.created_at,
+      };
+    })),
+      delete ticket.comments;
     delete ticket.ticket_member;
     return ticket;
   }
@@ -233,5 +267,61 @@ export class TicketService {
     } catch {
       return 0;
     }
+  }
+
+  async loadTicket(ticket_id: number, loadTicketDto: LoadTicketDto) {
+    const ticket = await this.ticketRepo.findOne({ where: { _id: ticket_id } });
+    if (!ticket) {
+      throw new NotFoundException('Ticket Not Found');
+    }
+
+    ticket.loaded_at = new Date();
+    await ticket.save();
+
+    try {
+      for (const { _id, loaded } of loadTicketDto.items) {
+        const tkm = await this.tkmRepo.findOne({
+          where: { _id, ticket: { _id: ticket_id } },
+        });
+        tkm.loaded = loaded;
+        await tkm.save();
+      }
+
+      for (const { _id, loaded } of loadTicketDto.other_items) {
+        const otm = await this.otmRepo.findOne({
+          where: { _id, ticket: { _id: ticket_id } },
+        });
+        otm.loaded = loaded;
+        await otm.save();
+      }
+    } catch (error) {}
+  }
+
+  async deliveredTicket(ticket_id: number, loadTicketDto: LoadTicketDto) {
+    const ticket = await this.ticketRepo.findOne({ where: { _id: ticket_id } });
+    if (!ticket) {
+      throw new NotFoundException('Ticket Not Found');
+    }
+
+    ticket.delivered_at = new Date();
+    await ticket.save();
+
+    try {
+      for (const { _id, delivered } of loadTicketDto.items) {
+        const tkm = await this.tkmRepo.findOne({
+          where: { _id, ticket: { _id: ticket_id } },
+        });
+        tkm.delivered = delivered;
+        await tkm.save();
+      }
+
+      for (const { _id, delivered } of loadTicketDto.other_items) {
+        const otm = await this.otmRepo.findOne({
+          where: { _id, ticket: { _id: ticket_id } },
+        });
+        otm.delivered = delivered;
+        await otm.save();
+      }
+    } catch (error) {}
   }
 }

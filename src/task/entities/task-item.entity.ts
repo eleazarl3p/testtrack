@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Task } from './task.entity';
 import { Machine } from 'src/machine/entities/machine.entity';
@@ -28,4 +29,7 @@ export class TaskItem extends BaseEntity {
 
   @ManyToOne(() => Machine, (machine) => machine.tasks_items)
   machine: Machine;
+
+  @UpdateDateColumn()
+  last_update: Date;
 }

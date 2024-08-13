@@ -11,6 +11,7 @@ import { TaskService } from './task.service';
 import { TaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CustomTaskValitationPipe } from './dto/validate-task.pipe';
+import { UpdateTaskItemDto } from './dto/update-tast-item.dto';
 
 @Controller('task')
 export class TaskController {
@@ -19,6 +20,11 @@ export class TaskController {
   @Post()
   create(@Body(new CustomTaskValitationPipe()) tasks: TaskDto[]) {
     return this.taskService.create(tasks);
+  }
+
+  @Post('cut-materials')
+  async cutTaskItems(@Body() updateTaskItemDto: UpdateTaskItemDto[]) {
+    return await this.taskService.updateTaskItem(updateTaskItemDto);
   }
 
   @Get()

@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +14,8 @@ import { Team } from 'src/team/entities/team.entity';
 import { TaskItem } from './entities/task-item.entity';
 import { MemberService } from 'src/member/member.service';
 import { ShapeService } from 'src/shape/shape.service';
+import { UpdateTaskItemDto } from './dto/update-tast-item.dto';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class TaskService {
@@ -116,6 +123,23 @@ export class TaskService {
       where: { material: { _id: materialId } },
     });
     return materials.reduce((acc, mat) => (acc += mat.cutted), 0);
+  }
+
+  async updateTaskItem(updateTaskItemDto: UpdateTaskItemDto[]) {
+    try {
+      for (const { _id, cutted } of updateTaskItemDto) {
+        const taskItem = await this.taskItemRepo.findOne({ where: { _id } });
+        if (!taskItem) {
+          throw new NotFoundException();
+        }
+
+        taskItem.cutted = cutted;
+        await taskItem.save();
+        // console.log('done', _id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   findOne(id: number) {

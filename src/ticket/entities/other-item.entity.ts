@@ -1,8 +1,14 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Ticket } from './ticket.entity';
 
 @Entity()
-export class OtherItem {
+export class OtherItem extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 

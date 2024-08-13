@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTruckDto } from './dto/create-truck.dto';
 import { UpdateTruckDto } from './dto/update-truck.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,8 +29,12 @@ export class TruckService {
     return await this.truckRepo.find({ order: { barcode: 'ASC' } });
   }
 
-  async findOne(name: string) {
-    return await this.truckRepo.findOne({ where: { name } });
+  async findOne(barcode: string) {
+    try {
+      return await this.truckRepo.findOneOrFail({ where: { barcode } });
+    } catch (error) {
+      throw new NotFoundException('Truck not found');
+    }
   }
 
   async update(_id: number, updateTruckDto: UpdateTruckDto) {

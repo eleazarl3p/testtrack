@@ -22,6 +22,12 @@ export class TicketMember extends BaseEntity {
   @Column({ default: 0 })
   delivered: number;
 
+  // @Column({ nullable: true })
+  // loaded_at: Date;
+
+  // @Column({ nullable: true })
+  // delivered_at: Date;
+
   @ManyToOne(() => Member, (member) => member.ticket_member)
   member: Member;
 

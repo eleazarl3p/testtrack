@@ -84,4 +84,8 @@ export class User {
 
   //   @OneToMany(() => Shipping_State, (shps) => shps.user)
   //   shipments: Shipping_State;
+
+  fullname() {
+    return `${this.first_name} ${this.middle_name} ${this.last_name}`;
+  }
 }

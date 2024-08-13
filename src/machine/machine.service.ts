@@ -102,7 +102,7 @@ export class MachineService {
     return await machine.save();
   }
 
-  async tasks(_id: number, paquete_id: number) {
+  async tasks(_id: number, paquete_id: number, pending: boolean = false) {
     const machine = await this.machineRepo.findOne({
       where: {
         _id,
@@ -119,7 +119,7 @@ export class MachineService {
 
     //delete machine.shapes;
 
-    return machine.tasks_items.map((ti) => {
+    const tasks = machine.tasks_items.map((ti) => {
       return {
         _id: ti._id,
         assigned: ti.assigned,
@@ -128,6 +128,11 @@ export class MachineService {
         priority: ti.task.priority,
       };
     });
+
+    if (pending) {
+      return tasks.filter((tk) => tk.assigned > tk.cutted);
+    }
+    return tasks;
   }
 
   async remove(_id: number) {

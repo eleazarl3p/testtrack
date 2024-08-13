@@ -11,7 +11,7 @@ import { TruckService } from './truck.service';
 import { CreateTruckDto } from './dto/create-truck.dto';
 import { UpdateTruckDto } from './dto/update-truck.dto';
 
-@Controller('trucks')
+@Controller('truck')
 export class TruckController {
   constructor(private readonly truckService: TruckService) {}
 
@@ -25,9 +25,9 @@ export class TruckController {
     return this.truckService.findAll();
   }
 
-  @Get(':name')
-  findOne(@Param('name') name: string) {
-    return this.truckService.findOne(name);
+  @Get('barcode/:barcode')
+  findOne(@Param('barcode') barcode: string) {
+    return this.truckService.findOne(barcode);
   }
 
   @Patch(':id')

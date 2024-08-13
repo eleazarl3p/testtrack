@@ -11,6 +11,8 @@ import {
 import { TicketService } from './ticket.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { LoadTicketDto } from './dto/load-ticket.dto';
+import { DeliveredTicketDto } from './dto/deliver-ticket.dto';
 
 @Controller('ticket')
 export class TicketController {
@@ -42,6 +44,22 @@ export class TicketController {
   @Get('available-members/:jobid/')
   availableMembers(@Param('jobid', ParseIntPipe) jobid: number) {
     return this.ticketService.availableMembers(jobid);
+  }
+
+  @Post('loading/:ticketid')
+  load(
+    @Param('ticketid') ticketId: number,
+    @Body() loadTicketDto: LoadTicketDto,
+  ) {
+    return this.ticketService.loadTicket(ticketId, loadTicketDto);
+  }
+
+  @Post('delivery/:ticketid')
+  delivered(
+    @Param('ticketid') ticketId: number,
+    @Body() deliveredTicketDto: LoadTicketDto,
+  ) {
+    return this.ticketService.deliveredTicket(ticketId, deliveredTicketDto);
   }
 
   @Patch(':id')

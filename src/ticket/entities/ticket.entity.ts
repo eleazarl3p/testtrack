@@ -10,6 +10,7 @@ import {
 import { TicketMember } from './tiketmember.entity';
 import { User } from 'src/user/entities/user.entity';
 import { OtherItem } from './other-item.entity';
+import { Tcomment } from 'src/tcomment/entities/tcomment.entity';
 
 export enum ticketType {
   ERECT = 'ERECT',
@@ -30,6 +31,9 @@ export class Ticket extends BaseEntity {
   @Column()
   contact: string;
 
+  @OneToMany(() => Tcomment, (comment) => comment.ticket)
+  comments: Tcomment[];
+
   @OneToMany(() => TicketMember, (tk) => tk.ticket)
   ticket_member: TicketMember;
 
@@ -39,6 +43,18 @@ export class Ticket extends BaseEntity {
   @ManyToOne(() => User, (usr) => usr.tickets)
   created__by__user: User;
 
+  @ManyToOne(() => User)
+  loaded__by__user: User;
+
+  @ManyToOne(() => User)
+  received__by__user: User;
+
   @CreateDateColumn()
   created_at: Date;
+
+  @Column({ nullable: true })
+  loaded_at: Date;
+
+  @Column({ nullable: true })
+  delivered_at: Date;
 }

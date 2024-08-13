@@ -1,11 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsIn,
-  IsNumber,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsIn, IsString, ValidateNested } from 'class-validator';
 import { OtherItemDto, TicketItemDto } from './ticket-item.dto';
 
 const alowedTicketType = ['ERECT', 'DELIVER'];

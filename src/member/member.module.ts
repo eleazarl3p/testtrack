@@ -8,6 +8,7 @@ import { MemberMaterial } from './entities/membermaterial.entity';
 import { MemberMaterialService } from './membermaterial.service';
 import { MemberArea } from './entities/memberarea.entity';
 import { TaskModule } from 'src/task/task.module';
+import { MemberAreaService } from './member-area.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { TaskModule } from 'src/task/task.module';
     forwardRef(() => TaskModule),
   ],
   controllers: [MemberController],
-  providers: [MemberService, MemberMaterialService],
+  providers: [MemberService, MemberMaterialService, MemberAreaService],
   exports: [MemberService, MemberMaterialService],
 })
 export class MemberModule {}
