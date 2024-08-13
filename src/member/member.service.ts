@@ -209,7 +209,7 @@ export class MemberService {
         .leftJoin('member.paquete', 'paquete')
         .select('member._id', 'member_id')
         .addSelect(
-          'CONCAT(member.mem_desc, " ", member.main_material)',
+          "CONCAT(member.mem_desc, ' ', member.main_material)",
           'details',
         )
         .addSelect('member.piecemark', 'piecemark')
