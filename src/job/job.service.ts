@@ -39,6 +39,7 @@ export class JobService {
   async findAll() {
     const modelos = await this.jobRepo.find({
       relations: { paquetes: true, installer: true, gc: true },
+      order: { paquetes: { name: 'asc' } },
     });
 
     return modelos;

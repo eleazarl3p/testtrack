@@ -228,18 +228,6 @@ export class MemberService {
     }
   }
 
-  // async availableForArea(areaId: number, job_id: number, paqueteId: number) {
-  //   const data = await this.findAll(job_id, paqueteId);
-
-  //   // const members = data.filter((member) =>
-  //   //   member.materials.every(
-  //   //     (material) => material.cutted === material.quantity,
-  //   //   ),
-  //   // );
-
-  //   return data;
-  // }
-
   async availableMembers(jobId: number, areaId: number) {
     const members = await this.findAll(jobId, null);
     const fullyCutted = members

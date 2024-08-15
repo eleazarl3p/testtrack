@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Ticket } from './ticket.entity';
 import { Member } from 'src/member/entities/member.entity';
@@ -22,19 +23,12 @@ export class TicketMember extends BaseEntity {
   @Column({ default: 0 })
   delivered: number;
 
-  // @Column({ nullable: true })
-  // loaded_at: Date;
-
-  // @Column({ nullable: true })
-  // delivered_at: Date;
-
   @ManyToOne(() => Member, (member) => member.ticket_member)
   member: Member;
 
   @ManyToOne(() => Ticket, (tk) => tk.ticket_member)
   ticket: Ticket;
 
-  // @ManyToOne(() => Team)
-  // team: Team;
+  @Column({ type: 'timestamp', nullable: true })
+  last_update: Date | null;
 }
-//11125-1

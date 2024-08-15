@@ -24,8 +24,8 @@ export class MachineController {
   }
 
   @Get()
-  findAll(@Query('paquetes', ParseBoolPipe) paquete: boolean) {
-    return this.machineService.findAll(paquete);
+  findAll() {
+    return this.machineService.findAll();
   }
 
   @Get(':id')

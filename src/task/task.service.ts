@@ -15,7 +15,8 @@ import { TaskItem } from './entities/task-item.entity';
 import { MemberService } from 'src/member/member.service';
 import { ShapeService } from 'src/shape/shape.service';
 import { UpdateTaskItemDto } from './dto/update-tast-item.dto';
-import { NotFoundError } from 'rxjs';
+import { Machine } from 'src/machine/entities/machine.entity';
+import { Material } from 'src/material/entities/material.entity';
 
 @Injectable()
 export class TaskService {
@@ -82,29 +83,51 @@ export class TaskService {
           const materialShape = material.section.match(sectionRegex).at(0);
           const ms = shapes.find((shape) => shape.name == materialShape);
 
-          if (ms) {
-            const taskMachine = new TaskItem();
-            taskMachine.assigned = material.quantity * assigned;
-            taskMachine.material = material;
-            taskMachine.task = savedTask;
-            taskMachine.machine = ms.machines[0];
-            const savedTaskMachine = await taskMachine.save();
-            machineTasks.push(savedTaskMachine);
-          } else {
-            notAssignedMember.push({
-              piecemark,
-              quantity: 0,
-              reason: `No machine available to cut material : ${material.section}`,
-            });
-
-            await this.taskRepo.delete(savedTask._id);
-            for (const mt of machineTasks) {
-              await this.taskItemRepo.delete(mt._id);
+          let machineId = 1;
+          if (ms.machines.length) {
+            if (materialShape.toLocaleLowerCase() == 'w') {
+              const depth = material.section.match('[0-9]+');
+              if (depth < 36) {
+                machineId = ms.machines[0]._id;
+              }
+            } else if (materialShape.toLocaleLowerCase() == 'l') {
+              const mtrl = new Material();
+              mtrl.section = material.section;
+              const [d, b, t] = mtrl.dbt();
+              if (d < 6 && b < 6 && t < 2.5) {
+                machineId = ms.machines[0]._id;
+              }
+            } else if (materialShape.toLocaleLowerCase() == 'pl') {
+              const m = new Material();
+              m.section = material.section;
+              if (m.gsr() < 2.5) {
+                machineId = ms.machines[0]._id;
+              }
             }
-
-            assignedMember.pop();
-            break;
           }
+
+          const taskMachine = new TaskItem();
+          taskMachine.assigned = material.quantity * assigned;
+          taskMachine.material = material;
+          taskMachine.task = savedTask;
+          taskMachine.machine = { _id: machineId } as Machine;
+          const savedTaskMachine = await taskMachine.save();
+          machineTasks.push(savedTaskMachine);
+          //} else {
+          //   notAssignedMember.push({
+          //     piecemark,
+          //     quantity: 0,
+          //     reason: `No machine available to cut material : ${material.section}`,
+          //   });
+
+          //   await this.taskRepo.delete(savedTask._id);
+          //   for (const mt of machineTasks) {
+          //     await this.taskItemRepo.delete(mt._id);
+          //   }
+
+          //   assignedMember.pop();
+          //   break;
+          // }
         }
       }
     } catch (error) {

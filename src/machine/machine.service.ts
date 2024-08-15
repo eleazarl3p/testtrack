@@ -35,31 +35,29 @@ export class MachineService {
     }
   }
 
-  async findAll(paq: boolean = false) {
-    if (paq) {
-      const machines = await this.machineRepo.find({
-        relations: { tasks_items: { task: { member: { paquete: true } } } },
+  async findAll() {
+    const machines = await this.machineRepo.find({
+      relations: {
+        tasks_items: { task: { member: { paquete: true } } },
+      },
+    });
+
+    return machines.map((machine) => {
+      const paquetes = {};
+      machine.tasks_items.forEach((ti) => {
+        if (ti.assigned > ti.cutted) {
+          paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
+        }
       });
 
-      return machines.map((machine) => {
-        const paquetes = {};
-        machine.tasks_items.forEach((ti) => {
-          if (ti.assigned > ti.cutted) {
-            paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
-          }
-        });
-
-        return {
-          _id: machine._id,
-          image: machine.image,
-          name: machine.name,
-          paquetes,
-          shapes: machine.shapes,
-        };
-      });
-    }
-
-    return await this.machineRepo.find();
+      return {
+        _id: machine._id,
+        image: machine.image,
+        name: machine.name,
+        paquetes,
+        shapes: machine.shapes,
+      };
+    });
   }
 
   async findOne(_id: number) {
@@ -106,18 +104,21 @@ export class MachineService {
     const machine = await this.machineRepo.findOne({
       where: {
         _id,
-        tasks_items: { task: { member: { paquete: { _id: paquete_id } } } },
+        tasks_items: {
+          task: { member: { paquete: { _id: paquete_id } } },
+        },
       },
       relations: {
-        tasks_items: { material: true, task: true },
+        tasks_items: {
+          material: true,
+          task: true,
+        },
       },
     });
 
     if (!machine) {
       throw new NotFoundException();
     }
-
-    //delete machine.shapes;
 
     const tasks = machine.tasks_items.map((ti) => {
       return {

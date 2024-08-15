@@ -116,11 +116,12 @@ export class TeamService {
           priority: task.priority,
           piecemark: task.member.piecemark,
           desc: `${task.member.mem_desc} ${task.member.main_material}`,
-          ready: Math.round(
-            (task.items.reduce((acc, item) => (acc += item.cutted), 0) /
-              task.items.reduce((acc, item) => (acc += item.assigned), 0)) *
-              100,
-          ),
+          ready:
+            Math.round(
+              (task.items.reduce((acc, item) => (acc += item.cutted), 0) /
+                task.items.reduce((acc, item) => (acc += item.assigned), 0)) *
+                100,
+            ) ?? 0,
           items: task.items.map((itm) => {
             return {
               assigned: itm.assigned,

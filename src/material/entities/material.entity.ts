@@ -63,4 +63,40 @@ export class Material {
 
   @CreateDateColumn()
   created_at: Date;
+
+  dbt() {
+    const [d, b] = this.section
+      .match(/(\d+)x(\d+)/)
+      .slice(1, 3)
+      .map(Number);
+
+    let t = undefined;
+
+    try {
+      const [t1, t2] = this.section
+        .match('([0-9]+)/([0-9]+)$')
+        .slice(1, 3)
+        .map(Number);
+      t = (t1 / t2).toFixed(2);
+    } catch {
+      [t] = this.section.match('([0-9]+)$').slice(0, 1).map(Number);
+    }
+
+    return [d, b, t];
+  }
+
+  public gsr() {
+    let t = undefined;
+    try {
+      const [t1, t2] = this.section
+        .match('([0-9]+)/([0-9]+)$')
+        .slice(1, 3)
+        .map(Number);
+      t = (t1 / t2).toFixed(2);
+    } catch {
+      [t] = this.section.match('([0-9]+)$').slice(0, 1).map(Number);
+    }
+
+    return t;
+  }
 }

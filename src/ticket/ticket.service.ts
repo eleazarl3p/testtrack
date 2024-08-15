@@ -47,6 +47,7 @@ export class TicketService {
 
     for (const ti of ticketItems) {
       const tkm = this.tkmRepo.create(ti);
+      tkm.last_update = new Date();
       tkm.ticket = ticket;
       tkm.member = { _id: ti.member_id } as Member;
       await this.tkmRepo.save(tkm);
@@ -110,6 +111,7 @@ export class TicketService {
               loaded: mb.loaded,
               delivered: mb.delivered,
               piecemark: mb.member.piecemark,
+              last_update: mb.last_update,
               mem_desc: `${mb.member.mem_desc} ${mb.member.main_material}`,
               weight: Math.round(await this.mmService.getWeight(mb.member._id)),
               team: mb.team,
@@ -169,6 +171,7 @@ export class TicketService {
           loaded: mb.loaded,
           delivered: mb.delivered,
           piecemark: mb.member.piecemark,
+          last_update: mb.last_update,
           mem_desc: `${mb.member.mem_desc} ${mb.member.main_material}`,
           weight: Math.round(await this.mmService.getWeight(mb.member._id)),
           team: mb.team,

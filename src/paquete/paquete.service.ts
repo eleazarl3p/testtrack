@@ -33,7 +33,7 @@ export class PaqueteService {
     try {
       job = await this.jobService.findById(job_id);
     } catch {
-      throw new NotFoundException();
+      throw new NotFoundException('Job not found');
     }
 
     const { members, ...paqueteDto } = createPaqueteDto;
