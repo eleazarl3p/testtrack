@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Ticket } from './ticket.entity';
 import { Member } from 'src/member/entities/member.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class TicketMember extends BaseEntity {
@@ -31,4 +32,7 @@ export class TicketMember extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   last_update: Date | null;
+
+  @ManyToOne(() => User)
+  user: User;
 }

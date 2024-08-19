@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Member } from './member.entity';
 import { Area } from 'src/area/entities/area.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class MemberArea extends BaseEntity {
@@ -25,4 +26,7 @@ export class MemberArea extends BaseEntity {
 
   @ManyToOne(() => Area, (area) => area.member_area)
   area: Area;
+
+  @ManyToOne(() => User)
+  user: User;
 }

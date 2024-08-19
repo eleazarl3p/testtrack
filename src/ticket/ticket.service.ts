@@ -16,6 +16,7 @@ import { TicketItemDto } from './dto/ticket-item.dto';
 import { time } from 'console';
 import { LoadTicketDto } from './dto/load-ticket.dto';
 import { DeliveredTicketDto } from './dto/deliver-ticket.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TicketService {
@@ -47,7 +48,7 @@ export class TicketService {
 
     for (const ti of ticketItems) {
       const tkm = this.tkmRepo.create(ti);
-      tkm.last_update = new Date();
+      // tkm.last_update = new Date();
       tkm.ticket = ticket;
       tkm.member = { _id: ti.member_id } as Member;
       await this.tkmRepo.save(tkm);
@@ -221,6 +222,25 @@ export class TicketService {
   async availableMembers(jobid: number) {
     const members = await this.memberService.findAll(jobid, undefined);
 
+    // const fullyCutted = members
+    //   .map((member) => {
+    //     const T = [];
+    //     member.materials.forEach((material) => {
+    //       const tn = Math.floor(material['cutted'] / material.quantity);
+    //       T.push(tn);
+    //     });
+
+    //     if (T.length) {
+    //       const readyToWeldOrWelded = Math.min(...T);
+
+    //       if (readyToWeldOrWelded > 0) {
+    //         member.quantity = readyToWeldOrWelded;
+    //         return member;
+    //       }
+    //     }
+    //   })
+    //   .filter(Boolean);
+
     const filteredMembers = (
       await Promise.all(
         members.map(async (mb) => {
@@ -239,6 +259,7 @@ export class TicketService {
       )
     ).filter(Boolean);
 
+    // return fullyCutted;
     return filteredMembers;
   }
 
@@ -272,21 +293,40 @@ export class TicketService {
     }
   }
 
-  async loadTicket(ticket_id: number, loadTicketDto: LoadTicketDto) {
-    const ticket = await this.ticketRepo.findOne({ where: { _id: ticket_id } });
+  async loadTicket(
+    ticket_id: number,
+    loadTicketDto: LoadTicketDto,
+    parcialLoad: boolean,
+  ) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { _id: ticket_id },
+    });
     if (!ticket) {
       throw new NotFoundException('Ticket Not Found');
     }
 
-    ticket.loaded_at = new Date();
+    if (!parcialLoad) ticket.loaded_at = new Date();
+
     await ticket.save();
 
     try {
       for (const { _id, loaded } of loadTicketDto.items) {
         const tkm = await this.tkmRepo.findOne({
           where: { _id, ticket: { _id: ticket_id } },
+          relations: { member: true },
         });
+
+        if (loaded > tkm.loaded) {
+          await this.memberService.moveToArea(5, [
+            {
+              id: tkm.member._id,
+              quantity: loaded - tkm.loaded,
+            },
+          ]);
+        }
         tkm.loaded = loaded;
+        tkm.last_update = new Date();
+        tkm.user = { _id: 1 } as User;
         await tkm.save();
       }
 
@@ -295,9 +335,13 @@ export class TicketService {
           where: { _id, ticket: { _id: ticket_id } },
         });
         otm.loaded = loaded;
+        otm.last_update = new Date();
+        otm.user = { _id: 1 } as User;
         await otm.save();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async deliveredTicket(ticket_id: number, loadTicketDto: LoadTicketDto) {
@@ -313,9 +357,18 @@ export class TicketService {
       for (const { _id, delivered } of loadTicketDto.items) {
         const tkm = await this.tkmRepo.findOne({
           where: { _id, ticket: { _id: ticket_id } },
+          relations: { member: true },
         });
+
         tkm.delivered = delivered;
         await tkm.save();
+
+        await this.memberService.moveToArea(6, [
+          {
+            id: tkm.member._id,
+            quantity: delivered,
+          },
+        ]);
       }
 
       for (const { _id, delivered } of loadTicketDto.other_items) {

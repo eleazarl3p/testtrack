@@ -47,7 +47,7 @@ export class MemberService {
           paquete: { job: true },
           member_material: { material: true },
           tasks: { items: { material: true } },
-          member_area: { area: true },
+          member_area: { area: true, user: true },
         },
         order: {
           tasks: { items: { last_update: 'asc' } },
@@ -89,7 +89,7 @@ export class MemberService {
         }
 
         member.member_material = Object.values(groupedMaterials);
-        return {
+        const newMember = {
           _id: member._id,
           barcode: member.barcode,
           piecemark: member.piecemark,
@@ -97,8 +97,32 @@ export class MemberService {
           quantity: member.quantity,
           weight: Math.round(weight),
           materials: member.member_material,
-          areas: member.member_area,
+          areas: member.member_area.map((area) => {
+            return {
+              ...area,
+              user: area.user.fullname(),
+            };
+          }),
         };
+
+        const ma = newMember.areas.reduce(
+          (acc, ma) => {
+            if (!acc[ma.area._id]) {
+              acc[ma.area._id] = {
+                ...ma,
+                quantity: 0,
+              };
+            }
+
+            acc[ma.area._id].quantity += ma.quantity;
+            acc[ma.area._id].created_at = ma.created_at;
+
+            return acc;
+          },
+          {} as Record<number, any>,
+        );
+        newMember.areas = Object.values(ma);
+        return newMember;
       }),
     );
   }
@@ -110,7 +134,7 @@ export class MemberService {
         member_material: { material: true },
         paquete: true,
         tasks: { items: { material: true } },
-        member_area: { area: true },
+        member_area: { area: true, user: true },
       },
       order: {
         tasks: { items: { last_update: 'asc' } },
@@ -145,7 +169,6 @@ export class MemberService {
           const piecemark = item.material.piecemark;
           if (groupedMaterials[piecemark]) {
             groupedMaterials[piecemark].cutted += item.cutted;
-
             groupedMaterials[piecemark]['last_update'] = item.last_update;
           }
         }
@@ -161,7 +184,12 @@ export class MemberService {
       quantity: member.quantity,
       weight: Math.round(weight),
       materials: member.member_material,
-      areas: member.member_area,
+      areas: member.member_area.map((area) => {
+        return {
+          ...area,
+          user: area.user.fullname(),
+        };
+      }),
     };
 
     const ma = newMember.areas.reduce(
@@ -228,8 +256,8 @@ export class MemberService {
     }
   }
 
-  async availableMembers(jobId: number, areaId: number) {
-    const members = await this.findAll(jobId, null);
+  async availableMembers(jobId: number, paqueteId: number, areaId: number) {
+    const members = await this.findAll(jobId, paqueteId);
     const fullyCutted = members
       .map((member) => {
         const T = [];

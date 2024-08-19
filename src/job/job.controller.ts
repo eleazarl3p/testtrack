@@ -20,7 +20,8 @@ export class JobController {
   constructor(private readonly jobService: JobService) {}
 
   @Get()
-  findAll() {
+  findAll(@Req() req: any) {
+    console.log(req.user);
     return this.jobService.findAll();
   }
 

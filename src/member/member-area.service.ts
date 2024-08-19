@@ -4,6 +4,7 @@ import { MemberArea } from './entities/memberarea.entity';
 import { Repository } from 'typeorm';
 import { Member } from './entities/member.entity';
 import { Area } from 'src/area/entities/area.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class MemberAreaService {
@@ -17,7 +18,7 @@ export class MemberAreaService {
       const w = this.maRepo.create({ quantity });
       w.member = { _id: memberId } as Member;
       w.area = { _id: areaId } as Area;
-
+      w.user = { _id: 1 } as User;
       await w.save();
     } catch (error) {
       console.log('error create ma ', error);

@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Ticket } from './ticket.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class OtherItem extends BaseEntity {
@@ -26,4 +27,10 @@ export class OtherItem extends BaseEntity {
 
   @ManyToOne(() => Ticket, (tk) => tk.other_items)
   ticket: Ticket;
+
+  @Column({ type: 'timestamp', nullable: true })
+  last_update: Date | null;
+
+  @ManyToOne(() => User)
+  user: User;
 }

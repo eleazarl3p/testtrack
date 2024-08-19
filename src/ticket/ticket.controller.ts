@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -49,9 +51,10 @@ export class TicketController {
   @Post('loading/:ticketid')
   load(
     @Param('ticketid') ticketId: number,
+    @Query('parcial', ParseBoolPipe) parcial: boolean,
     @Body() loadTicketDto: LoadTicketDto,
   ) {
-    return this.ticketService.loadTicket(ticketId, loadTicketDto);
+    return this.ticketService.loadTicket(ticketId, loadTicketDto, parcial);
   }
 
   @Post('delivery/:ticketid')
