@@ -4,6 +4,7 @@ import { Paquete } from 'src/paquete/entities/paquete.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   DeleteDateColumn,
   Entity,
   ManyToOne,
@@ -39,6 +40,9 @@ export class Job extends BaseEntity {
   @ManyToOne(() => Contact, (contact) => contact.gc_job)
   gc: Contact;
 
-  @DeleteDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
+  created_at: Date;
+
+  @DeleteDateColumn({ type: 'datetime' })
   deleteDate: Date;
 }
