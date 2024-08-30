@@ -73,30 +73,46 @@ export class Material {
     let t = undefined;
 
     try {
-      const [t1, t2] = this.section
-        .match('([0-9]+)/([0-9]+)$')
-        .slice(1, 3)
+      const [t1, t2, t3] = this.section
+        .match('([0-9]+)\\s([0-9]+)/([0-9]+)$')
+        .slice(1, 4)
         .map(Number);
-      t = (t1 / t2).toFixed(2);
+      t = (t1 + t2 / t3).toFixed(2);
     } catch {
-      [t] = this.section.match('([0-9]+)$').slice(0, 1).map(Number);
+      try {
+        const [t1, t2] = this.section
+          .match('([0-9]+)/([0-9]+)$')
+          .slice(1, 3)
+          .map(Number);
+        t = (t1 / t2).toFixed(2);
+      } catch {
+        [t] = this.section.match('([0-9]+)$').slice(0, 1).map(Number);
+      }
     }
 
     return [d, b, t];
   }
 
   public gsr() {
-    let t = undefined;
+    let g = undefined;
     try {
-      const [t1, t2] = this.section
-        .match('([0-9]+)/([0-9]+)$')
-        .slice(1, 3)
+      const [g1, g2, g3] = this.section
+        .match('([0-9]+)\\s([0-9]+)/([0-9]+)x')
+        .slice(1, 4)
         .map(Number);
-      t = (t1 / t2).toFixed(2);
+      g = (g1 + g2 / g3).toFixed(2);
     } catch {
-      [t] = this.section.match('([0-9]+)$').slice(0, 1).map(Number);
+      try {
+        const [g1, g2] = this.section
+          .match('([0-9]+)/([0-9]+)x')
+          .slice(1, 3)
+          .map(Number);
+        g = (g1 / g2).toFixed(2);
+      } catch {
+        [g] = this.section.match('([0-9]+)x').slice(1, 2).map(Number);
+      }
     }
 
-    return t;
+    return g;
   }
 }

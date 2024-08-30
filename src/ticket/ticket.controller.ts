@@ -9,14 +9,18 @@ import {
   ParseIntPipe,
   Query,
   ParseBoolPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { LoadTicketDto } from './dto/load-ticket.dto';
 import { DeliveredTicketDto } from './dto/deliver-ticket.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('ticket')
+@UseGuards(AuthGuard('jwt'))
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
@@ -48,21 +52,38 @@ export class TicketController {
     return this.ticketService.availableMembers(jobid);
   }
 
-  @Post('loading/:ticketid')
+  @Post('loading/:ticketid/:truckid')
   load(
     @Param('ticketid') ticketId: number,
-    @Query('parcial', ParseBoolPipe) parcial: boolean,
+    @Param('truckid') truckId: number,
+    @Query('partial', ParseBoolPipe) partial: boolean,
     @Body() loadTicketDto: LoadTicketDto,
+    @Req() req: any,
   ) {
-    return this.ticketService.loadTicket(ticketId, loadTicketDto, parcial);
+    const userId = req.user.sub;
+    return this.ticketService.loadTicket(
+      ticketId,
+      truckId,
+      loadTicketDto,
+      partial,
+      userId,
+    );
   }
 
   @Post('delivery/:ticketid')
   delivered(
     @Param('ticketid') ticketId: number,
     @Body() deliveredTicketDto: LoadTicketDto,
+    @Query('partial', ParseBoolPipe) partial: boolean,
+    @Req() req: any,
   ) {
-    return this.ticketService.deliveredTicket(ticketId, deliveredTicketDto);
+    const userId = req.user.sub;
+    return this.ticketService.deliveredTicket(
+      ticketId,
+      deliveredTicketDto,
+      partial,
+      userId,
+    );
   }
 
   @Patch(':id')

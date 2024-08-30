@@ -46,8 +46,8 @@ export class TaskService {
         team_id,
         assigned,
         piecemark,
-        priority,
         job_id,
+        date_delta,
       } of createTaskDto) {
         let member = undefined;
 
@@ -70,7 +70,9 @@ export class TaskService {
         task.member = { _id: member_id } as Member;
         task.team = { _id: team_id } as Team;
         task.quantity = assigned;
-        task.priority = priority;
+        task.expected_date = this.calculateDate(date_delta);
+        task.estimated_date = task.expected_date;
+
         const savedTask = await task.save();
 
         assignedMember.push({
@@ -94,13 +96,13 @@ export class TaskService {
               const mtrl = new Material();
               mtrl.section = material.section;
               const [d, b, t] = mtrl.dbt();
-              if (d < 6 && b < 6 && t < 2.5) {
+              if (d < 6 && b < 6 && t < 0.51) {
                 machineId = ms.machines[0]._id;
               }
             } else if (materialShape.toLocaleLowerCase() == 'pl') {
               const m = new Material();
               m.section = material.section;
-              if (m.gsr() < 2.5) {
+              if (m.gsr() < 2.51) {
                 machineId = ms.machines[0]._id;
               }
             }
@@ -141,24 +143,31 @@ export class TaskService {
     return this.taskRepo.find({ relations: { team: true } });
   }
 
-  async countCuttedMaterialOf(materialId: number) {
-    const materials = await this.taskItemRepo.find({
-      where: { material: { _id: materialId } },
-    });
-    return materials.reduce((acc, mat) => (acc += mat.cutted), 0);
+  async countCutMaterialOf(materialId: number) {
+    const items = await this.taskItemRepo
+      .find({
+        where: { material: { _id: materialId } },
+        order: { last_update: 'asc' },
+      })
+      .then((itms) => itms.filter((itm) => itm.cut > 0).filter(Boolean));
+
+    return {
+      last_update:
+        items.length > 0 ? items[items.length - 1].last_update : null,
+      cut: items.reduce((acc, itm) => (acc += itm.cut), 0),
+    };
   }
 
   async updateTaskItem(updateTaskItemDto: UpdateTaskItemDto[]) {
     try {
-      for (const { _id, cutted } of updateTaskItemDto) {
+      for (const { _id, cut } of updateTaskItemDto) {
         const taskItem = await this.taskItemRepo.findOne({ where: { _id } });
         if (!taskItem) {
           throw new NotFoundException();
         }
 
-        taskItem.cutted = cutted;
+        taskItem.cut = cut;
         await taskItem.save();
-        // console.log('done', _id);
       }
     } catch (error) {
       console.log(error);
@@ -169,11 +178,23 @@ export class TaskService {
     return `This action returns a #${id} task`;
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  async update(updateTaskDto: UpdateTaskDto[]) {
+    for (const { _id, expected_date } of updateTaskDto) {
+      await this.taskRepo.update({ _id }, { expected_date });
+    }
   }
 
   remove(id: number) {
     return `This action removes a #${id} task`;
+  }
+
+  calculateDate(delta: number) {
+    const currentDate = new Date();
+
+    const localCurrentDate = new Date(
+      currentDate.getTime() - currentDate.getTimezoneOffset() * 60 * 1000,
+    );
+
+    return new Date(localCurrentDate.getTime() + delta * 24 * 60 * 60 * 1000);
   }
 }

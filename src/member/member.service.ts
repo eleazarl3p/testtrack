@@ -67,7 +67,7 @@ export class MemberService {
               acc[mm.material.piecemark] = {
                 ...mm.material,
                 quantity: 0,
-                cutted: 0,
+                cut: 0,
               };
             }
             acc[mm.material.piecemark].quantity += mm.quantity;
@@ -81,8 +81,22 @@ export class MemberService {
             for (const item of task.items) {
               const piecemark = item.material.piecemark;
               if (groupedMaterials[piecemark]) {
-                groupedMaterials[piecemark].cutted += item.cutted;
-                groupedMaterials[piecemark]['last_update'] = item.last_update;
+                groupedMaterials[piecemark].cut += item.cut;
+                if (!groupedMaterials[piecemark]['last_update']) {
+                  groupedMaterials[piecemark]['last_update'] = item.last_update;
+                } else {
+                  const lastDate = new Date(
+                    groupedMaterials[piecemark]['last_update'],
+                  ).toLocaleDateString();
+                  const currentDate = new Date(
+                    item.last_update,
+                  ).toLocaleDateString();
+
+                  if (currentDate > lastDate && item.cut > 0) {
+                    groupedMaterials[piecemark]['last_update'] =
+                      item.last_update;
+                  }
+                }
               }
             }
           }
@@ -97,6 +111,10 @@ export class MemberService {
           quantity: member.quantity,
           weight: Math.round(weight),
           materials: member.member_material,
+          // tasks: member.tasks.map((tsk) => {
+          //   delete tsk.items;
+          //   return tsk;
+          // }),
           areas: member.member_area.map((area) => {
             return {
               ...area,
@@ -105,7 +123,7 @@ export class MemberService {
           }),
         };
 
-        const ma = newMember.areas.reduce(
+        const mar = newMember.areas.reduce(
           (acc, ma) => {
             if (!acc[ma.area._id]) {
               acc[ma.area._id] = {
@@ -121,7 +139,7 @@ export class MemberService {
           },
           {} as Record<number, any>,
         );
-        newMember.areas = Object.values(ma);
+        newMember.areas = Object.values(mar);
         return newMember;
       }),
     );
@@ -154,7 +172,7 @@ export class MemberService {
           acc[mm.material.piecemark] = {
             ...mm.material,
             quantity: 0,
-            cutted: 0,
+            cut: 0,
           };
         }
         acc[mm.material.piecemark].quantity += mm.quantity;
@@ -168,8 +186,22 @@ export class MemberService {
         for (const item of task.items) {
           const piecemark = item.material.piecemark;
           if (groupedMaterials[piecemark]) {
-            groupedMaterials[piecemark].cutted += item.cutted;
-            groupedMaterials[piecemark]['last_update'] = item.last_update;
+            groupedMaterials[piecemark].cut += item.cut;
+
+            if (!groupedMaterials[piecemark]['last_update']) {
+              groupedMaterials[piecemark]['last_update'] = item.last_update;
+            } else {
+              const lastDate = new Date(
+                groupedMaterials[piecemark]['last_update'],
+              ).toLocaleDateString();
+              const currentDate = new Date(
+                item.last_update,
+              ).toLocaleDateString();
+
+              if (currentDate > lastDate && item.cut > 0) {
+                groupedMaterials[piecemark]['last_update'] = item.last_update;
+              }
+            }
           }
         }
       }
@@ -212,9 +244,16 @@ export class MemberService {
     return newMember;
   }
 
-  async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
+  // async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
+  //   return await this.memberRepo.findOne({
+  //     where: { piecemark, paquete: { _id: paqueteId } },
+  //     relations: ['paquete'],
+  //   });
+  // }
+
+  async findOneBy(barcode: string): Promise<Member> {
     return await this.memberRepo.findOne({
-      where: { piecemark, paquete: { _id: paqueteId } },
+      where: { barcode },
       relations: ['paquete'],
     });
   }
@@ -258,11 +297,11 @@ export class MemberService {
 
   async availableMembers(jobId: number, paqueteId: number, areaId: number) {
     const members = await this.findAll(jobId, paqueteId);
-    const fullyCutted = members
+    const fullyCut = members
       .map((member) => {
         const T = [];
         member.materials.forEach((material) => {
-          const tn = Math.floor(material['cutted'] / material.quantity);
+          const tn = Math.floor(material['cut'] / material.quantity);
           T.push(tn);
         });
 
@@ -277,7 +316,7 @@ export class MemberService {
       })
       .filter(Boolean);
 
-    const groupArea = fullyCutted.map((member) => {
+    const groupArea = fullyCut.map((member) => {
       const ma = member.areas.reduce(
         (acc, ma) => {
           if (!acc[ma.area._id]) {

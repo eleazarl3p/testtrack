@@ -8,10 +8,11 @@ import { MemberModule } from 'src/member/member.module';
 
 import { OtherItem } from './entities/other-item.entity';
 import { JobModule } from 'src/job/job.module';
+import { Tcomment } from './entities/tcomment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Ticket, TicketMember, OtherItem]),
+    TypeOrmModule.forFeature([Ticket, TicketMember, OtherItem, Tcomment]),
     MemberModule,
     JobModule,
   ],

@@ -40,14 +40,17 @@ export class MachineService {
       relations: {
         tasks_items: { task: { member: { paquete: true } } },
       },
+      order: {
+        tasks_items: { task: { member: { paquete: { name: 'ASC' } } } },
+      },
     });
 
     return machines.map((machine) => {
       const paquetes = {};
       machine.tasks_items.forEach((ti) => {
-        if (ti.assigned > ti.cutted) {
-          paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
-        }
+        //if (ti.assigned > ti.cut) {
+        paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
+        //}
       });
 
       return {
@@ -66,7 +69,7 @@ export class MachineService {
       relations: {
         tasks_items: { task: true },
       },
-      order: { tasks_items: { task: { priority: 'ASC' } } },
+      order: { tasks_items: { task: { expected_date: 'ASC' } } },
     });
 
     return {
@@ -78,8 +81,8 @@ export class MachineService {
         return {
           id: ti._id,
           assigned: ti.assigned,
-          cutted: ti.cutted,
-          priority: ti.task.priority,
+          cut: ti.cut,
+          expected_date: ti.task.expected_date.toISOString(),
         };
       }),
     };
@@ -100,10 +103,10 @@ export class MachineService {
     return await machine.save();
   }
 
-  async tasks(_id: number, paquete_id: number, pending: boolean = false) {
+  async tasks(id: number, paquete_id: number, pending: boolean = false) {
     const machine = await this.machineRepo.findOne({
       where: {
-        _id,
+        _id: id,
         tasks_items: {
           task: { member: { paquete: { _id: paquete_id } } },
         },
@@ -124,14 +127,14 @@ export class MachineService {
       return {
         _id: ti._id,
         assigned: ti.assigned,
-        cutted: ti.cutted,
+        cut: ti.cut,
         material: ti.material,
-        priority: ti.task.priority,
+        expected_date: ti.task.expected_date.toISOString(),
       };
     });
 
     if (pending) {
-      return tasks.filter((tk) => tk.assigned > tk.cutted);
+      return tasks.filter((tk) => tk.assigned > tk.cut);
     }
     return tasks;
   }

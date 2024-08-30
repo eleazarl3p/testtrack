@@ -17,7 +17,6 @@ import { ShapeModule } from './shape/shape.module';
 import { TeamModule } from './team/team.module';
 import { TaskModule } from './task/task.module';
 import { TruckModule } from './truck/truck.module';
-import { TcommentModule } from './tcomment/tcomment.module';
 
 import * as dotenv from 'dotenv';
 
@@ -52,7 +51,6 @@ dotenv.config();
     TeamModule,
     TaskModule,
     TruckModule,
-    TcommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

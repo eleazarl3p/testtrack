@@ -23,43 +23,42 @@ export class TeamService {
     }
   }
 
-  alphabeticalOrder(teams: Team[]) {
-    return teams.sort((a, b) => {
-      const matchA = a.name.match(/^([A-Za-z]+)(\d+)?$/);
-      const matchB = b.name.match(/^([A-Za-z]+)(\d+)?$/);
+  // alphabeticalOrder(teams: Team[]) {
+  //   return teams.sort((a, b) => {
+  //     const matchA = a.name.match(/^([A-Za-z]+)(\d+)?$/);
+  //     const matchB = b.name.match(/^([A-Za-z]+)(\d+)?$/);
 
-      const prefixA = matchA[1];
-      const prefixB = matchB[1];
+  //     const prefixA = matchA[1];
+  //     const prefixB = matchB[1];
 
-      const numA = matchA[2] ? parseInt(matchA[2]) : NaN;
-      const numB = matchB[2] ? parseInt(matchB[2]) : NaN;
+  //     const numA = matchA[2] ? parseInt(matchA[2]) : NaN;
+  //     const numB = matchB[2] ? parseInt(matchB[2]) : NaN;
 
-      // Compare prefixes alphabetically
-      if (prefixA !== prefixB) {
-        return prefixA.localeCompare(prefixB);
-      }
+  //     // Compare prefixes alphabetically
+  //     if (prefixA !== prefixB) {
+  //       return prefixA.localeCompare(prefixB);
+  //     }
 
-      // If prefixes are the same, compare numeric parts
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return numA - numB;
-      }
+  //     // If prefixes are the same, compare numeric parts
+  //     if (!isNaN(numA) && !isNaN(numB)) {
+  //       return numA - numB;
+  //     }
 
-      // If only one has a numeric part, the non-numeric one comes first
-      if (isNaN(numA) && !isNaN(numB)) {
-        return -1;
-      }
-      if (!isNaN(numA) && isNaN(numB)) {
-        return 1;
-      }
+  //     // If only one has a numeric part, the non-numeric one comes first
+  //     if (isNaN(numA) && !isNaN(numB)) {
+  //       return -1;
+  //     }
+  //     if (!isNaN(numA) && isNaN(numB)) {
+  //       return 1;
+  //     }
 
-      // If neither has a numeric part, they are equal in terms of sorting
-      return 0;
-    });
-  }
+  //     // If neither has a numeric part, they are equal in terms of sorting
+  //     return 0;
+  //   });
+  // }
+
   async findAll() {
-    const teams = await this.teamRepo.find({ order: { name: 'ASC' } });
-
-    return this.alphabeticalOrder(teams);
+    return await this.teamRepo.find({ order: { name: 'ASC' } });
   }
 
   async assignedPaquete(_id: number) {
@@ -72,7 +71,7 @@ export class TeamService {
         },
       },
       order: {
-        tasks: { priority: 'ASC', member: { paquete: { name: 'ASC' } } },
+        tasks: { estimated_date: 'ASC', member: { paquete: { name: 'ASC' } } },
       },
     });
 
@@ -83,9 +82,9 @@ export class TeamService {
     const paquetes = {};
     team.tasks.forEach((task) => {
       task.items.forEach((it) => {
-        if (it.assigned > it.cutted) {
-          paquetes[task.member.paquete._id] = task.member.paquete.name;
-        }
+        //if (it.assigned > it.cut) {
+        paquetes[task.member.paquete._id] = task.member.paquete.name;
+        //}
       });
     });
 
@@ -101,7 +100,7 @@ export class TeamService {
           items: { machine: true, material: true },
         },
       },
-      order: { tasks: { priority: 'ASC' } },
+      order: { tasks: { estimated_date: 'ASC' } },
     });
 
     if (!team) {
@@ -112,20 +111,21 @@ export class TeamService {
       name: team.name,
       tasks: team.tasks.map((task) => {
         return {
-          quanttity: task.quantity,
-          priority: task.priority,
+          _id: task._id,
+          quantity: task.quantity,
+          expected_date: task.expected_date,
           piecemark: task.member.piecemark,
           desc: `${task.member.mem_desc} ${task.member.main_material}`,
-          ready:
+          cut_percent:
             Math.round(
-              (task.items.reduce((acc, item) => (acc += item.cutted), 0) /
+              (task.items.reduce((acc, item) => (acc += item.cut), 0) /
                 task.items.reduce((acc, item) => (acc += item.assigned), 0)) *
                 100,
             ) ?? 0,
           items: task.items.map((itm) => {
             return {
               assigned: itm.assigned,
-              cuted: itm.cutted,
+              cut: itm.cut,
               mark: itm.material.piecemark,
               section: itm.material.section,
               machine: itm.machine.name,

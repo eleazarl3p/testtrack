@@ -60,9 +60,14 @@ export class MemberMaterialService {
       };
     }, null);
 
+    const { last_update, cut } = await this.taskService.countCutMaterialOf(
+      material._id,
+    );
+
     return {
       ...material,
-      cutted: await this.taskService.countCuttedMaterialOf(material._id),
+      cut,
+      last_update,
     };
   }
 }

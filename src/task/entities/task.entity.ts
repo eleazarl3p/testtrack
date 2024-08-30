@@ -20,7 +20,10 @@ export class Task extends BaseEntity {
   quantity: number;
 
   @Column()
-  priority: number;
+  expected_date: Date;
+
+  @Column()
+  estimated_date: Date;
 
   @ManyToOne(() => Member)
   member: Member;

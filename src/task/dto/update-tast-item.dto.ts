@@ -8,5 +8,5 @@ export class UpdateTaskItemDto {
   assigned: number;
 
   @IsNumber()
-  cutted: number;
+  cut: number;
 }

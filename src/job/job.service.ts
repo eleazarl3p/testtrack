@@ -19,7 +19,7 @@ export class JobService {
       order: { paquetes: { name: 'ASC' } },
     });
 
-    job.paquetes = this.alphabeticalOrder(job.paquetes);
+    //job.paquetes = this.alphabeticalOrder(job.paquetes);
     return job;
   }
 

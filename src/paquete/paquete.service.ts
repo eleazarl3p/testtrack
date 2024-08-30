@@ -49,7 +49,7 @@ export class PaqueteService {
     }
 
     if (members.length == 0) {
-      return paquete;
+      return [];
     }
 
     const ppk = await this.findOne(paquete._id);
@@ -70,14 +70,20 @@ export class PaqueteService {
             material = await this.materialService.create(mat);
           }
 
-          const mm = new MemberMaterial();
-          mm.member = newMember;
-          mm.material = material;
-          mm.quantity = mat.quantity;
-          await this.mmService.create(mm);
+          const mm_ = await this.mmService.findOne(newMember._id, material._id);
+
+          if (!mm_) {
+            const mm = new MemberMaterial();
+            mm.member = newMember;
+            mm.material = material;
+            mm.quantity = mat.quantity;
+            await this.mmService.create(mm);
+          }
         }
       } catch (error) {
-        const barcode = `M${job.job_name}-${member.piecemark.padStart(6, '0')}`;
+        console.log(error);
+        console.log(error.code);
+        //const barcode = `M${job.job_name}-${member.piecemark.padStart(6, '0')}`;
         //this.memberService.updateByCode(barcode, { ...member });
       }
     }
@@ -108,24 +114,21 @@ export class PaqueteService {
 
     for (const member of members) {
       try {
-        let currentMember = await this.memberService.findOneBy(
-          member.piecemark,
-          paquete._id,
-        );
+        const mbrbarcode = `M${paquete.job.job_name}-${member.piecemark.padStart(6, '0')}`;
+        let currentMember = await this.memberService.findOneBy(mbrbarcode);
 
         if (!currentMember) {
-          member['barcode'] =
-            `M${paquete.job.job_name}-${member.piecemark.padStart(6, '0')}`;
+          member['barcode'] = mbrbarcode;
           currentMember = await this.memberService.create(member);
           paquete.members.push(currentMember);
         }
 
         for (const mat of member.materials) {
-          const barcode = `W${paquete.job.job_name}-${mat.piecemark.padStart(6, '0')}`;
-          let material = await this.materialService.findOne(barcode);
+          const mtrlbarcode = `W${paquete.job.job_name}-${mat.piecemark.padStart(6, '0')}`;
+          let material = await this.materialService.findOne(mtrlbarcode);
 
           if (!material) {
-            mat['barcode'] = barcode;
+            mat['barcode'] = mtrlbarcode;
             material = await this.materialService.create(mat);
           }
 
@@ -143,6 +146,8 @@ export class PaqueteService {
           }
         }
       } catch (error) {
+        console.log(error);
+        console.log(error.code);
         // const barcode = `M${job.job_name}-${member.piecemark.padStart(5, '0')}`;
         // this.memberService.updateByCode(barcode, { ...member });
       }

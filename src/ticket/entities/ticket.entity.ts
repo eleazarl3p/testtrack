@@ -10,7 +10,9 @@ import {
 import { TicketMember } from './tiketmember.entity';
 import { User } from 'src/user/entities/user.entity';
 import { OtherItem } from './other-item.entity';
-import { Tcomment } from 'src/tcomment/entities/tcomment.entity';
+
+import { Truck } from 'src/truck/entities/truck.entity';
+import { Tcomment } from './tcomment.entity';
 
 export enum ticketType {
   ERECT = 'ERECT',
@@ -49,12 +51,15 @@ export class Ticket extends BaseEntity {
   @ManyToOne(() => User)
   received__by__user: User;
 
-  @CreateDateColumn()
+  @ManyToOne(() => Truck)
+  truck: Truck;
+
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   loaded_at: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   delivered_at: Date;
 }

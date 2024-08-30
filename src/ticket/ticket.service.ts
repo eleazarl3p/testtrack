@@ -17,6 +17,9 @@ import { time } from 'console';
 import { LoadTicketDto } from './dto/load-ticket.dto';
 import { DeliveredTicketDto } from './dto/deliver-ticket.dto';
 import { User } from 'src/user/entities/user.entity';
+import { Truck } from 'src/truck/entities/truck.entity';
+import { Tcomment } from './entities/tcomment.entity';
+import { tmpdir } from 'os';
 
 @Injectable()
 export class TicketService {
@@ -29,6 +32,9 @@ export class TicketService {
 
     @InjectRepository(OtherItem)
     private readonly otmRepo: Repository<OtherItem>,
+
+    @InjectRepository(Tcomment)
+    private readonly tcomRepo: Repository<Tcomment>,
 
     private readonly memberService: MemberService,
 
@@ -84,6 +90,7 @@ export class TicketService {
       .leftJoinAndSelect('ticket.other_items', 'other_items')
       .leftJoinAndSelect('ticket.comments', 'comments')
       .leftJoinAndSelect('comments.user', 'user')
+      .leftJoinAndSelect('ticket.truck', 'truck')
       .where('ticket.barcode LIKE :bc', { bc: `TI-${job_name}-%` })
       .getMany();
 
@@ -129,14 +136,12 @@ export class TicketService {
           created_at: ticket.created_at,
           other_items: ticket.other_items,
           items,
+          truck: ticket.truck,
           tcomments: ticket.comments.map((tcomment) => {
             return {
               _id: tcomment._id,
               details: tcomment.details,
-              user: {
-                username: tcomment.user.username,
-                fullname: tcomment.user.fullname(),
-              },
+              user: tcomment.user.fullname(),
               created_at: tcomment.created_at,
             };
           }),
@@ -156,6 +161,7 @@ export class TicketService {
         ticket_member: { member: true },
         other_items: true,
         comments: { user: true },
+        truck: true,
       },
     });
 
@@ -199,10 +205,7 @@ export class TicketService {
       return {
         _id: tcomment._id,
         details: tcomment.details,
-        user: {
-          username: tcomment.user.username,
-          fullname: tcomment.user.fullname(),
-        },
+        user: tcomment.user.fullname(),
         created_at: tcomment.created_at,
       };
     })),
@@ -222,11 +225,11 @@ export class TicketService {
   async availableMembers(jobid: number) {
     const members = await this.memberService.findAll(jobid, undefined);
 
-    // const fullyCutted = members
+    // const fullyCut = members
     //   .map((member) => {
     //     const T = [];
     //     member.materials.forEach((material) => {
-    //       const tn = Math.floor(material['cutted'] / material.quantity);
+    //       const tn = Math.floor(material['cut'] / material.quantity);
     //       T.push(tn);
     //     });
 
@@ -259,7 +262,7 @@ export class TicketService {
       )
     ).filter(Boolean);
 
-    // return fullyCutted;
+    // return fullyCut;
     return filteredMembers;
   }
 
@@ -295,8 +298,10 @@ export class TicketService {
 
   async loadTicket(
     ticket_id: number,
+    truckId: number,
     loadTicketDto: LoadTicketDto,
-    parcialLoad: boolean,
+    partialLoad: boolean,
+    userId: number,
   ) {
     const ticket = await this.ticketRepo.findOne({
       where: { _id: ticket_id },
@@ -305,9 +310,22 @@ export class TicketService {
       throw new NotFoundException('Ticket Not Found');
     }
 
-    if (!parcialLoad) ticket.loaded_at = new Date();
+    if (!partialLoad) {
+      ticket.loaded_at = new Date();
+      ticket.loaded__by__user = { _id: userId } as User;
+    }
+
+    ticket.truck = { _id: truckId } as Truck;
 
     await ticket.save();
+
+    if (loadTicketDto.tcomments.length > 0) {
+      const tcomt = this.tcomRepo.create();
+      tcomt.details = loadTicketDto.tcomments.pop().details;
+      tcomt.user = { _id: userId } as User;
+      tcomt.ticket = ticket;
+      await tcomt.save();
+    }
 
     try {
       for (const { _id, loaded } of loadTicketDto.items) {
@@ -344,14 +362,30 @@ export class TicketService {
     }
   }
 
-  async deliveredTicket(ticket_id: number, loadTicketDto: LoadTicketDto) {
+  async deliveredTicket(
+    ticket_id: number,
+    loadTicketDto: LoadTicketDto,
+    partial: boolean,
+    userId: number,
+  ) {
     const ticket = await this.ticketRepo.findOne({ where: { _id: ticket_id } });
     if (!ticket) {
       throw new NotFoundException('Ticket Not Found');
     }
 
-    ticket.delivered_at = new Date();
+    if (!partial) {
+      ticket.delivered_at = new Date();
+      ticket.received__by__user = { _id: userId } as User;
+    }
     await ticket.save();
+
+    if (loadTicketDto.tcomments.length > 0) {
+      const tcomt = this.tcomRepo.create();
+      tcomt.details = loadTicketDto.tcomments.pop().details;
+      tcomt.user = { _id: userId } as User;
+      tcomt.ticket = ticket;
+      await tcomt.save();
+    }
 
     try {
       for (const { _id, delivered } of loadTicketDto.items) {
@@ -360,15 +394,28 @@ export class TicketService {
           relations: { member: true },
         });
 
+        if (delivered > tkm.delivered) {
+          await this.memberService.moveToArea(6, [
+            {
+              id: tkm.member._id,
+              quantity: delivered - tkm.delivered,
+            },
+          ]);
+        }
         tkm.delivered = delivered;
+        tkm.last_update = new Date();
+        tkm.user = { _id: 1 } as User;
         await tkm.save();
 
-        await this.memberService.moveToArea(6, [
-          {
-            id: tkm.member._id,
-            quantity: delivered,
-          },
-        ]);
+        // tkm.delivered = delivered;
+        // await tkm.save();
+
+        // await this.memberService.moveToArea(6, [
+        //   {
+        //     id: tkm.member._id,
+        //     quantity: delivered,
+        //   },
+        // ]);
       }
 
       for (const { _id, delivered } of loadTicketDto.other_items) {

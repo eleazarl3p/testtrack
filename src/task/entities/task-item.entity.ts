@@ -19,7 +19,7 @@ export class TaskItem extends BaseEntity {
   assigned: number;
 
   @Column({ default: 0 })
-  cutted: number;
+  cut: number;
 
   @ManyToOne(() => Material, (material) => material.task_items)
   material: Material;

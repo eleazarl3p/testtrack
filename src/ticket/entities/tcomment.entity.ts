@@ -1,6 +1,7 @@
 import { Ticket } from 'src/ticket/entities/ticket.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -9,7 +10,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Tcomment {
+export class Tcomment extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 

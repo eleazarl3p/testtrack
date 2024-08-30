@@ -1,11 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsNumber,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
 
 export class ldDto {
   @IsNumber()
@@ -17,10 +11,16 @@ export class ldDto {
   @IsNumber()
   delivered: number;
 }
-export class LoadTicketDto {
+
+export class TCommentDto {
   @IsString()
-  @IsOptional()
-  comments: string;
+  details: string;
+}
+export class LoadTicketDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TCommentDto)
+  tcomments: TCommentDto[];
 
   @IsArray()
   @ValidateNested({ each: true })

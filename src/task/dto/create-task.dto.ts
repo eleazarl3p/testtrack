@@ -5,9 +5,6 @@ export class TaskDto {
   assigned: number;
 
   @IsNumber()
-  priority: number;
-
-  @IsNumber()
   member_id: number;
 
   @IsString()
@@ -21,4 +18,7 @@ export class TaskDto {
 
   @IsNumber()
   job_id: number;
+
+  @IsNumber()
+  date_delta: number;
 }
