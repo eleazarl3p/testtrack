@@ -4,11 +4,13 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Task } from './task.entity';
 import { Machine } from 'src/machine/entities/machine.entity';
+import { CutHistory } from './cut-history.entity';
 
 @Entity()
 export class TaskItem extends BaseEntity {
@@ -17,9 +19,6 @@ export class TaskItem extends BaseEntity {
 
   @Column()
   assigned: number;
-
-  @Column({ default: 0 })
-  cut: number;
 
   @ManyToOne(() => Material, (material) => material.task_items)
   material: Material;
@@ -30,6 +29,6 @@ export class TaskItem extends BaseEntity {
   @ManyToOne(() => Machine, (machine) => machine.tasks_items)
   machine: Machine;
 
-  @UpdateDateColumn()
-  last_update: Date;
+  @OneToMany(() => CutHistory, (ch) => ch.task_item)
+  cut_history: CutHistory[];
 }

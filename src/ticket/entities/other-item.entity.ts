@@ -28,7 +28,7 @@ export class OtherItem extends BaseEntity {
   @ManyToOne(() => Ticket, (tk) => tk.other_items)
   ticket: Ticket;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   last_update: Date | null;
 
   @ManyToOne(() => User)

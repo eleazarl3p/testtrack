@@ -9,9 +9,6 @@ import { Repository } from 'typeorm';
 import { Member } from './entities/member.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MemberMaterialService } from './membermaterial.service';
-import { MemberAreaService } from './member-area.service';
-import { MemberToAreaDto } from './dto/member-to-area.dto';
-import { MemberMaterial } from './entities/membermaterial.entity';
 
 @Injectable()
 export class MemberService {
@@ -20,10 +17,6 @@ export class MemberService {
     private readonly memberRepo: Repository<Member>,
 
     private readonly mmService: MemberMaterialService,
-
-    private readonly maService: MemberAreaService,
-
-    //private readonly weldingService: WeldingService,
   ) {}
 
   async create(createMemberDto: CreateMemberDto) {
@@ -46,12 +39,10 @@ export class MemberService {
         relations: {
           paquete: { job: true },
           member_material: { material: true },
-          tasks: { items: { material: true } },
-          member_area: { area: true, user: true },
+          tasks: { items: { material: true, cut_history: true } },
         },
         order: {
-          tasks: { items: { last_update: 'asc' } },
-          member_area: { created_at: 'asc' },
+          //tasks: { items: { last_update: 'asc' } },
         },
       });
     } catch {
@@ -60,103 +51,43 @@ export class MemberService {
 
     return await Promise.all(
       members.map(async (member) => {
-        const weight = await this.mmService.getWeight(member._id);
-        const groupedMaterials = member.member_material.reduce(
-          (acc, mm) => {
-            if (!acc[mm.material.piecemark]) {
-              acc[mm.material.piecemark] = {
-                ...mm.material,
-                quantity: 0,
-                cut: 0,
-              };
-            }
-            acc[mm.material.piecemark].quantity += mm.quantity;
-            return acc;
-          },
-          {} as Record<string, any>,
-        );
-
-        if (member.tasks.length) {
-          for (const task of member.tasks) {
-            for (const item of task.items) {
-              const piecemark = item.material.piecemark;
-              if (groupedMaterials[piecemark]) {
-                groupedMaterials[piecemark].cut += item.cut;
-                if (!groupedMaterials[piecemark]['last_update']) {
-                  groupedMaterials[piecemark]['last_update'] = item.last_update;
-                } else {
-                  const lastDate = new Date(
-                    groupedMaterials[piecemark]['last_update'],
-                  ).toLocaleDateString();
-                  const currentDate = new Date(
-                    item.last_update,
-                  ).toLocaleDateString();
-
-                  if (currentDate > lastDate && item.cut > 0) {
-                    groupedMaterials[piecemark]['last_update'] =
-                      item.last_update;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        member.member_material = Object.values(groupedMaterials);
-        const newMember = {
-          _id: member._id,
-          barcode: member.barcode,
-          piecemark: member.piecemark,
-          mem_desc: `${member.mem_desc} ${member.main_material}`,
-          quantity: member.quantity,
-          weight: Math.round(weight),
-          materials: member.member_material,
-          // tasks: member.tasks.map((tsk) => {
-          //   delete tsk.items;
-          //   return tsk;
-          // }),
-          areas: member.member_area.map((area) => {
-            return {
-              ...area,
-              user: area.user.fullname(),
-            };
-          }),
-        };
-
-        const mar = newMember.areas.reduce(
-          (acc, ma) => {
-            if (!acc[ma.area._id]) {
-              acc[ma.area._id] = {
-                ...ma,
-                quantity: 0,
-              };
-            }
-
-            acc[ma.area._id].quantity += ma.quantity;
-            acc[ma.area._id].created_at = ma.created_at;
-
-            return acc;
-          },
-          {} as Record<number, any>,
-        );
-        newMember.areas = Object.values(mar);
-        return newMember;
+        return await this.findOne(member._id);
       }),
     );
   }
 
-  async findOne(jobid: number, _id: number) {
+  async findMember(_id: number) {
     const member = await this.memberRepo.findOne({
-      where: { _id, paquete: { job: { _id: jobid } } },
+      where: { _id },
+      relations: { member_material: { material: true } },
+    });
+
+    const groupedMaterials = member.member_material.reduce(
+      (acc, mm) => {
+        if (!acc[mm.material.piecemark]) {
+          acc[mm.material.piecemark] = {
+            ...mm.material,
+            quantity: 0,
+          };
+        }
+        acc[mm.material.piecemark].quantity += mm.quantity;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
+    return {
+      ...member,
+      materials: Object.values(groupedMaterials),
+    };
+  }
+
+  async findOne(_id: number) {
+    const member = await this.memberRepo.findOne({
+      where: { _id },
       relations: {
         member_material: { material: true },
         paquete: true,
-        tasks: { items: { material: true } },
-        member_area: { area: true, user: true },
-      },
-      order: {
-        tasks: { items: { last_update: 'asc' } },
-        member_area: { created_at: 'asc' },
+        tasks: { items: { material: true, cut_history: true } },
       },
     });
 
@@ -166,48 +97,72 @@ export class MemberService {
 
     const weight = await this.mmService.getWeight(member._id);
 
-    const groupedMaterials = member.member_material.reduce(
-      (acc, mm) => {
-        if (!acc[mm.material.piecemark]) {
-          acc[mm.material.piecemark] = {
-            ...mm.material,
-            quantity: 0,
-            cut: 0,
-          };
-        }
-        acc[mm.material.piecemark].quantity += mm.quantity;
-        return acc;
-      },
-      {} as Record<string, any>,
+    const groupedMaterials = await Promise.all(
+      member.member_material.map(async (mat) => {
+        return this.mmService.countMaterialsGivenMember(mat.material_id, _id);
+      }),
     );
+    // const groupedMaterials = member.member_material.reduce(
+    //   (acc, mm) => {
+    //     if (!acc[mm.material.piecemark]) {
+    //       acc[mm.material.piecemark] = {
+    //         ...mm.material,
+    //         quantity: 0,
+    //         cut: 0,
+    //         last_update: null,
+    //       };
+    //     }
+    //     acc[mm.material.piecemark].quantity += mm.quantity;
+    //     return acc;
+    //   },
+    //   {} as Record<string, any>,
+    // );
 
-    if (member.tasks.length) {
-      for (const task of member.tasks) {
-        for (const item of task.items) {
-          const piecemark = item.material.piecemark;
-          if (groupedMaterials[piecemark]) {
-            groupedMaterials[piecemark].cut += item.cut;
+    // if (member.tasks.length) {
+    //   for (const task of member.tasks) {
+    //     for (const item of task.items) {
+    //       const piecemark = item.material.piecemark;
+    //       if (groupedMaterials[piecemark]) {
+    //         groupedMaterials[piecemark].cut += item.cut_history.reduce(
+    //           (acc, c) => (acc += c.approved),
+    //           0,
+    //         );
 
-            if (!groupedMaterials[piecemark]['last_update']) {
-              groupedMaterials[piecemark]['last_update'] = item.last_update;
-            } else {
-              const lastDate = new Date(
-                groupedMaterials[piecemark]['last_update'],
-              ).toLocaleDateString();
-              const currentDate = new Date(
-                item.last_update,
-              ).toLocaleDateString();
+    //         if (!groupedMaterials[piecemark].last_update) {
+    //           const ld = item.cut_history
+    //             .sort(
+    //               (a, b) =>
+    //                 new Date(b.last_update).getTime() -
+    //                 new Date(a.last_update).getTime(),
+    //             )
+    //             .pop();
+    //           if (ld) {
+    //             groupedMaterials[piecemark].last_update = ld.last_update;
+    //           }
+    //         } else {
+    //           const lastDate = new Date(
+    //             groupedMaterials[piecemark].last_update,
+    //           );
+    //           const currentDate = item.cut_history
+    //             .sort(
+    //               (a, b) =>
+    //                 new Date(b.last_update).getTime() -
+    //                 new Date(a.last_update).getTime(),
+    //             )
+    //             .pop();
+    //           if (
+    //             currentDate &&
+    //             new Date(currentDate.last_update).getTime() > lastDate.getTime()
+    //           ) {
+    //             groupedMaterials[piecemark].last_update = lastDate;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
-              if (currentDate > lastDate && item.cut > 0) {
-                groupedMaterials[piecemark]['last_update'] = item.last_update;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    member.member_material = Object.values(groupedMaterials);
+    //member.member_material = Object.values(groupedMaterials);
     const newMember = {
       _id: member._id,
       barcode: member.barcode,
@@ -215,41 +170,29 @@ export class MemberService {
       mem_desc: `${member.mem_desc} ${member.main_material}`,
       quantity: member.quantity,
       weight: Math.round(weight),
-      materials: member.member_material,
-      areas: member.member_area.map((area) => {
-        return {
-          ...area,
-          user: area.user.fullname(),
-        };
-      }),
+      materials: groupedMaterials,
+      areas: [],
     };
 
-    const ma = newMember.areas.reduce(
-      (acc, ma) => {
-        if (!acc[ma.area._id]) {
-          acc[ma.area._id] = {
-            ...ma,
-            quantity: 0,
-          };
-        }
+    // const ma = newMember.areas.reduce(
+    //   (acc, ma) => {
+    //     if (!acc[ma.area._id]) {
+    //       acc[ma.area._id] = {
+    //         ...ma,
+    //         quantity: 0,
+    //       };
+    //     }
 
-        acc[ma.area._id].quantity += ma.quantity;
-        acc[ma.area._id].created_at = ma.created_at;
+    //     acc[ma.area._id].quantity += ma.quantity;
+    //     acc[ma.area._id].created_at = ma.created_at;
 
-        return acc;
-      },
-      {} as Record<number, any>,
-    );
-    newMember.areas = Object.values(ma);
+    //     return acc;
+    //   },
+    //   {} as Record<number, any>,
+    // );
+    // newMember.areas = Object.values(ma);
     return newMember;
   }
-
-  // async findOneBy(piecemark: string, paqueteId: number): Promise<Member> {
-  //   return await this.memberRepo.findOne({
-  //     where: { piecemark, paquete: { _id: paqueteId } },
-  //     relations: ['paquete'],
-  //   });
-  // }
 
   async findOneBy(barcode: string): Promise<Member> {
     return await this.memberRepo.findOne({
@@ -258,7 +201,7 @@ export class MemberService {
     });
   }
 
-  async getBarcode(paquete_id: number) {
+  async getBarcodes(paquete_id: number) {
     const barcodes = await this.memberRepo.find({
       where: { paquete: { _id: paquete_id } },
       relations: { paquete: true },
@@ -295,69 +238,66 @@ export class MemberService {
     }
   }
 
-  async availableMembers(jobId: number, paqueteId: number, areaId: number) {
-    const members = await this.findAll(jobId, paqueteId);
-    const fullyCut = members
-      .map((member) => {
-        const T = [];
-        member.materials.forEach((material) => {
-          const tn = Math.floor(material['cut'] / material.quantity);
-          T.push(tn);
-        });
+  // async availableMembers(jobId: number, paqueteId: number, areaId: number) {
+  //   const members = await this.findAll(jobId, paqueteId);
 
-        if (T.length) {
-          const readyToWeldOrWelded = Math.min(...T);
+  //   const fullyCut = members
+  //     .map((member) => {
+  //       const T = [];
+  //       member.materials.forEach((material) => {
+  //         const totCut = material.cut_history.reduce(
+  //           (acc, cut) => (acc += cut.quantity),
+  //           0,
+  //         );
+  //         const tn = Math.floor(totCut / material.quantity);
+  //         T.push(tn);
+  //       });
+  //       if (T.length) {
+  //         const fc = Math.min(...T);
+  //         if (fc > 0) {
+  //           member.quantity = fc;
+  //           return member;
+  //         }
+  //       }
+  //     })
+  //     .filter(Boolean);
 
-          if (readyToWeldOrWelded > 0) {
-            member.quantity = readyToWeldOrWelded;
-            return member;
-          }
-        }
-      })
-      .filter(Boolean);
+  //   return fullyCut;
 
-    const groupArea = fullyCut.map((member) => {
-      const ma = member.areas.reduce(
-        (acc, ma) => {
-          if (!acc[ma.area._id]) {
-            acc[ma.area._id] = {
-              ...ma,
-              quantity: 0,
-            };
-          }
+  //   // const groupArea = fullyCut.map((member) => {
+  //   //   const ma = member.areas.reduce(
+  //   //     (acc, ma) => {
+  //   //       if (!acc[ma.area._id]) {
+  //   //         acc[ma.area._id] = {
+  //   //           ...ma,
+  //   //           quantity: 0,
+  //   //         };
+  //   //       }
+  //   //       acc[ma.area._id].quantity += ma.quantity;
+  //   //       // acc[ma.area._id].created_at = ma.created_at;
+  //   //       return acc;
+  //   //     },
+  //   //     {} as Record<number, any>,
+  //   //   );
+  //   //   member.areas = Object.values(ma);
+  //   //   return member;
+  //   // });
+  //   // return groupArea
+  //   //   .map((mm) => {
+  //   //     const am = mm.areas.filter((a) => a.area._id == areaId);
+  //   //     if (!am) {
+  //   //       return mm;
+  //   //     }
 
-          acc[ma.area._id].quantity += ma.quantity;
-          acc[ma.area._id].created_at = ma.created_at;
+  //   //     const totToArea = am.reduce((acc, ar) => (acc += ar.quantity), 0);
 
-          return acc;
-        },
-        {} as Record<number, any>,
-      );
-      member.areas = Object.values(ma);
-      return member;
-    });
-
-    return groupArea
-      .map((mm) => {
-        const am = mm.areas.filter((a) => a.area._id == areaId);
-        if (!am) {
-          return mm;
-        }
-
-        const totToArea = am.reduce((acc, ar) => (acc += ar.quantity), 0);
-        if (totToArea < mm.quantity) {
-          mm.quantity -= totToArea;
-          return mm;
-        }
-      })
-      .filter(Boolean);
-  }
-
-  async moveToArea(areaId: number, membertoareaDto: MemberToAreaDto[]) {
-    for (const { id, quantity } of membertoareaDto) {
-      this.maService.create(areaId, id, quantity);
-    }
-  }
+  //   //     if (totToArea < mm.quantity) {
+  //   //       mm.quantity -= totToArea;
+  //   //       return mm;
+  //   //     }
+  //   //   })
+  //   //   .filter(Boolean);
+  // }
 
   updateByCode(barcode: string, updateMemberDto: UpdateMemberDto) {
     this.memberRepo.update({ barcode }, { ...updateMemberDto });

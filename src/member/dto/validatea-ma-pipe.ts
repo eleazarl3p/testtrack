@@ -1,6 +1,6 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { MemberToAreaDto } from './member-to-area.dto';
+import { TaskToAreaDto } from '../../task/dto/member-to-area.dto';
 import { validate } from 'class-validator';
 
 export class ValidateMemberAreaPipe implements PipeTransform {
@@ -10,7 +10,7 @@ export class ValidateMemberAreaPipe implements PipeTransform {
     }
 
     const movimientos = value.map((item) =>
-      plainToInstance(MemberToAreaDto, item),
+      plainToInstance(TaskToAreaDto, item),
     );
 
     const errors = await Promise.all(

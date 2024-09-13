@@ -1,8 +1,8 @@
 import { IsNumber } from 'class-validator';
 
-export class MemberToAreaDto {
+export class TaskToAreaDto {
   @IsNumber()
-  id: number;
+  _id: number;
 
   @IsNumber()
   quantity: number;

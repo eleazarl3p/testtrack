@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateMaterialDto } from './dto/create-material.dto';
-import { UpdateMaterialDto } from './dto/update-material.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Material } from './entities/material.entity';
 import { Repository } from 'typeorm';
@@ -43,42 +42,23 @@ export class MaterialService {
       }),
     );
 
-    return m;
+    return m.map((obj) => Object.values(obj)[0]);
   }
 
-  async findOne(barcode: string): Promise<Material> {
+  async find(barcode: string): Promise<Material> {
     return await this.materialRepo.findOne({ where: { barcode } });
   }
-  // async findOne(piecemark: string, jobId: number) {
-  //   const material = await this.findOneByPiecemark(piecemark, jobId);
-  //   if (!material) {
-  //     throw new NotFoundException('Material Not Found');
-  //   }
-  //   return await this.mmService.countMaterials(material._id);
-  // }
 
-  // findOneByPiecemark(piecemark: string, jobId: number) {
-  //   return this.materialRepo.findOne({
-  //     where: {
-  //       piecemark,
-  //       member_material: { member: { paquete: { job: { _id: jobId } } } },
-  //     },
-  //     relations: { member_material: { member: { paquete: { job: true } } } },
-  //   });
-  // }
+  async findOne(barcode: string) {
+    const material = await this.materialRepo.findOne({ where: { barcode } });
+    if (!material) {
+      throw new NotFoundException();
+    }
 
-  // async findOneByPiecemarkAndBarcode(
-  //   piecemark: string,
-  //   job_name: string,
-  // ): Promise<Material> {
-  //   return await this.materialRepo
-  //     .createQueryBuilder('material')
-  //     .where('material.piecemark = :piecemark', { piecemark })
-  //     .andWhere('material.barcode LIKE :job_name', {
-  //       job_name: `%${job_name}%`,
-  //     })
-  //     .getOne();
-  // }
+    const m = await this.mmService.countMaterials(material._id);
+
+    return Object.values(m).pop();
+  }
 
   async getBarcodesByPaquete(paqueteId: number): Promise<string[]> {
     const barcodes = await this.materialRepo

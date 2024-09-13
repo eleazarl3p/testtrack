@@ -28,11 +28,6 @@ export class MachineController {
     return this.machineService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.machineService.findOne(+id);
-  }
-
   @Get(':machine_id/:paquete_id/tasks')
   async pendingtasks(
     @Param('machine_id', ParseIntPipe) machine_id: number,

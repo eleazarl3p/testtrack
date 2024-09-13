@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { TaskItem } from './task-item.entity';
+import { TaskArea } from './taskarea.entity';
 
 @Entity()
 export class Task extends BaseEntity {
@@ -19,10 +20,10 @@ export class Task extends BaseEntity {
   @Column()
   quantity: number;
 
-  @Column()
+  @Column({ type: 'datetime' })
   expected_date: Date;
 
-  @Column()
+  @Column({ type: 'datetime' })
   estimated_date: Date;
 
   @ManyToOne(() => Member)
@@ -34,6 +35,9 @@ export class Task extends BaseEntity {
   @OneToMany(() => TaskItem, (item) => item.task)
   items: TaskItem[];
 
-  @CreateDateColumn()
+  @OneToMany(() => TaskArea, (ta) => ta.task)
+  task_area: TaskArea[];
+
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 }

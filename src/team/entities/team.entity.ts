@@ -19,9 +19,9 @@ export class Team {
   @OneToMany(() => Task, (task) => task.team)
   tasks: Task[];
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'datetime' })
   deleted_at: Date;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 }

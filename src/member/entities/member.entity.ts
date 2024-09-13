@@ -11,7 +11,6 @@ import {
 import { MemberMaterial } from './membermaterial.entity';
 import { TicketMember } from 'src/ticket/entities/tiketmember.entity';
 import { Task } from 'src/task/entities/task.entity';
-import { MemberArea } from './memberarea.entity';
 
 @Entity()
 export class Member extends BaseEntity {
@@ -39,7 +38,7 @@ export class Member extends BaseEntity {
   @ManyToOne(() => Paquete, (paquete) => paquete.members)
   paquete: Paquete;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   create_date: Date;
 
   @OneToMany(() => MemberMaterial, (mm) => mm.member)
@@ -50,7 +49,4 @@ export class Member extends BaseEntity {
 
   @OneToMany(() => Task, (tsk) => tsk.member)
   tasks: Task[];
-
-  @OneToMany(() => MemberArea, (ma) => ma.member)
-  member_area: MemberArea[];
 }

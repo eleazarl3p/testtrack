@@ -54,12 +54,12 @@ export class Ticket extends BaseEntity {
   @ManyToOne(() => Truck)
   truck: Truck;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   loaded_at: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   delivered_at: Date;
 }

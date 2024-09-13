@@ -23,40 +23,6 @@ export class TeamService {
     }
   }
 
-  // alphabeticalOrder(teams: Team[]) {
-  //   return teams.sort((a, b) => {
-  //     const matchA = a.name.match(/^([A-Za-z]+)(\d+)?$/);
-  //     const matchB = b.name.match(/^([A-Za-z]+)(\d+)?$/);
-
-  //     const prefixA = matchA[1];
-  //     const prefixB = matchB[1];
-
-  //     const numA = matchA[2] ? parseInt(matchA[2]) : NaN;
-  //     const numB = matchB[2] ? parseInt(matchB[2]) : NaN;
-
-  //     // Compare prefixes alphabetically
-  //     if (prefixA !== prefixB) {
-  //       return prefixA.localeCompare(prefixB);
-  //     }
-
-  //     // If prefixes are the same, compare numeric parts
-  //     if (!isNaN(numA) && !isNaN(numB)) {
-  //       return numA - numB;
-  //     }
-
-  //     // If only one has a numeric part, the non-numeric one comes first
-  //     if (isNaN(numA) && !isNaN(numB)) {
-  //       return -1;
-  //     }
-  //     if (!isNaN(numA) && isNaN(numB)) {
-  //       return 1;
-  //     }
-
-  //     // If neither has a numeric part, they are equal in terms of sorting
-  //     return 0;
-  //   });
-  // }
-
   async findAll() {
     return await this.teamRepo.find({ order: { name: 'ASC' } });
   }
@@ -97,7 +63,7 @@ export class TeamService {
       relations: {
         tasks: {
           member: { paquete: true },
-          items: { machine: true, material: true },
+          items: { machine: true, material: true, cut_history: true },
         },
       },
       order: { tasks: { estimated_date: 'ASC' } },
@@ -116,16 +82,14 @@ export class TeamService {
           expected_date: task.expected_date,
           piecemark: task.member.piecemark,
           desc: `${task.member.mem_desc} ${task.member.main_material}`,
-          cut_percent:
-            Math.round(
-              (task.items.reduce((acc, item) => (acc += item.cut), 0) /
-                task.items.reduce((acc, item) => (acc += item.assigned), 0)) *
-                100,
-            ) ?? 0,
           items: task.items.map((itm) => {
             return {
+              //_id: itm._id,
               assigned: itm.assigned,
-              cut: itm.cut,
+              cut: itm.cut_history.reduce(
+                (acc, cut) => (acc += cut.approved),
+                0,
+              ),
               mark: itm.material.piecemark,
               section: itm.material.section,
               machine: itm.machine.name,

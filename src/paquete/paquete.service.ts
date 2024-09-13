@@ -63,7 +63,7 @@ export class PaqueteService {
 
         for (const mat of member.materials) {
           const barcode = `W${job.job_name}-${mat.piecemark.padStart(6, '0')}`;
-          let material = await this.materialService.findOne(barcode);
+          let material = await this.materialService.find(barcode);
 
           if (!material) {
             mat['barcode'] = barcode;
@@ -125,7 +125,7 @@ export class PaqueteService {
 
         for (const mat of member.materials) {
           const mtrlbarcode = `W${paquete.job.job_name}-${mat.piecemark.padStart(6, '0')}`;
-          let material = await this.materialService.findOne(mtrlbarcode);
+          let material = await this.materialService.find(mtrlbarcode);
 
           if (!material) {
             mat['barcode'] = mtrlbarcode;
@@ -163,7 +163,7 @@ export class PaqueteService {
   }
 
   async getBarcode(id: number) {
-    const memberBarcodes = await this.memberService.getBarcode(id);
+    const memberBarcodes = await this.memberService.getBarcodes(id);
     const materialBarcodes =
       await this.materialService.getBarcodesByPaquete(id);
     return memberBarcodes.concat(materialBarcodes);

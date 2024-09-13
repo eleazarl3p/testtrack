@@ -12,14 +12,12 @@ import { Member } from 'src/member/entities/member.entity';
 import { OtherItem } from './entities/other-item.entity';
 import { MemberMaterialService } from 'src/member/membermaterial.service';
 import { JobService } from 'src/job/job.service';
-import { TicketItemDto } from './dto/ticket-item.dto';
-import { time } from 'console';
+
 import { LoadTicketDto } from './dto/load-ticket.dto';
-import { DeliveredTicketDto } from './dto/deliver-ticket.dto';
+
 import { User } from 'src/user/entities/user.entity';
 import { Truck } from 'src/truck/entities/truck.entity';
 import { Tcomment } from './entities/tcomment.entity';
-import { tmpdir } from 'os';
 
 @Injectable()
 export class TicketService {
@@ -335,12 +333,12 @@ export class TicketService {
         });
 
         if (loaded > tkm.loaded) {
-          await this.memberService.moveToArea(5, [
-            {
-              id: tkm.member._id,
-              quantity: loaded - tkm.loaded,
-            },
-          ]);
+          // await this.memberService.moveToArea(5, [
+          //   {
+          //     id: tkm.member._id,
+          //     quantity: loaded - tkm.loaded,
+          //   },
+          // ]);
         }
         tkm.loaded = loaded;
         tkm.last_update = new Date();
@@ -395,12 +393,12 @@ export class TicketService {
         });
 
         if (delivered > tkm.delivered) {
-          await this.memberService.moveToArea(6, [
-            {
-              id: tkm.member._id,
-              quantity: delivered - tkm.delivered,
-            },
-          ]);
+          // await this.memberService.moveToArea(6, [
+          //   {
+          //     id: tkm.member._id,
+          //     quantity: delivered - tkm.delivered,
+          //   },
+          // ]);
         }
         tkm.delivered = delivered;
         tkm.last_update = new Date();

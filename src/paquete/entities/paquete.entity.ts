@@ -33,9 +33,9 @@ export class Paquete extends BaseEntity {
   @ManyToOne(() => Job, (job) => job.paquetes)
   job: Job;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'datetime' })
   deleted_at: Date;
 }

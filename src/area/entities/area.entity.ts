@@ -1,4 +1,4 @@
-import { MemberArea } from 'src/member/entities/memberarea.entity';
+import { TaskArea } from 'src/task/entities/taskarea.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -15,9 +15,8 @@ export class Area {
   @Column({ default: 'xmark' })
   image: string;
 
-  @OneToMany(() => MemberArea, (ma) => ma.area)
-  member_area: MemberArea[];
-
+  @OneToMany(() => TaskArea, (ta) => ta.area)
+  task_area: TaskArea[];
   // @OneToMany(() => MaterialHistory, (mh) => mh.area)
   // mat_history: MaterialHistory[];
 

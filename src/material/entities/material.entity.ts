@@ -61,7 +61,7 @@ export class Material {
   @OneToMany(() => TaskItem, (ti) => ti.material)
   task_items: TaskItem[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 
   dbt() {

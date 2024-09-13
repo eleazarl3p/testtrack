@@ -30,7 +30,7 @@ export class TicketMember extends BaseEntity {
   @ManyToOne(() => Ticket, (tk) => tk.ticket_member)
   ticket: Ticket;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   last_update: Date | null;
 
   @ManyToOne(() => User)

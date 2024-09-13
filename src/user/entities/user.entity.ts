@@ -10,7 +10,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
 } from 'typeorm';
 
 export enum AuthorizedApps {
@@ -67,8 +66,8 @@ export class User {
   })
   role: UserRole;
 
-  @CreateDateColumn()
-  created_at: Timestamp;
+  @CreateDateColumn({ type: 'datetime' })
+  created_at: Date;
 
   //   @OneToMany(() => Material_History, (mh) => mh.user)
   //   worked_materials: Material_History[];

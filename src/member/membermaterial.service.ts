@@ -3,6 +3,7 @@ import { MemberMaterial } from './entities/membermaterial.entity';
 import { Repository } from 'typeorm';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TaskService } from 'src/task/task.service';
+import { CutHistory } from 'src/task/entities/cut-history.entity';
 
 @Injectable()
 export class MemberMaterialService {
@@ -40,34 +41,91 @@ export class MemberMaterialService {
   async countMaterials(material_id: number) {
     const mbmtrl = await this.mmRepo.find({
       where: { material_id },
-      relations: { member: true, material: true },
+      relations: {
+        member: {
+          tasks: { items: { cut_history: { user: true }, material: true } },
+        },
+        material: true,
+      },
     });
 
     const materials = mbmtrl.map((mm) => {
       return {
         ...mm.material,
         quantity: mm.quantity * mm.member.quantity,
+        cut_history: mm.member.tasks.flatMap((tsk) => {
+          const itm = tsk.items.filter(
+            (it) => it.material._id == mm.material._id,
+          );
+          return itm.flatMap((c) => {
+            return c.cut_history.map((ct) => {
+              return {
+                ...ct,
+                user: ct.user ? ct.user.fullname() : '..9.',
+              };
+            });
+          });
+        }),
       };
     });
 
-    const material = materials.reduce((acc, item) => {
-      if (!acc) {
-        return { ...item };
-      }
-      return {
-        ...acc,
-        quantity: acc.quantity + item.quantity,
-      };
-    }, null);
-
-    const { last_update, cut } = await this.taskService.countCutMaterialOf(
-      material._id,
+    return materials.reduce(
+      (acc, m) => {
+        if (!acc[m._id]) {
+          acc[m._id] = {
+            ...m,
+            quantity: 0,
+            cut_history: [],
+          };
+        }
+        acc[m._id].quantity += m.quantity;
+        acc[m._id].cut_history = acc[m._id].cut_history.concat(m.cut_history);
+        return acc;
+      },
+      {} as Record<number, any>,
     );
+  }
 
-    return {
-      ...material,
-      cut,
-      last_update,
-    };
+  async countMaterialsGivenMember(material_id: number, member_id: number) {
+    const mbmtrl = await this.mmRepo.find({
+      where: { material_id, member_id },
+      relations: {
+        member: { tasks: { items: { cut_history: true, material: true } } },
+        material: true,
+      },
+    });
+
+    return mbmtrl
+      .map((mm) => {
+        return {
+          ...mm.material,
+          quantity: mm.quantity, //* mm.member.quantity,
+          cut_history: mm.member.tasks.flatMap((tsk) => {
+            const itm = tsk.items.filter(
+              (it) => it.material._id == mm.material._id,
+            );
+            return itm.flatMap((c) => {
+              return c.cut_history.map((ct) => {
+                return {
+                  ...ct,
+                  user: ct.user ? ct.user.fullname() : '...',
+                };
+              });
+              // return {
+              //   _id: c._id,
+              //   assigned: c.assigned,
+              //   cut_history: c.cut_history.map((ct) => {
+              //     return {
+              //       ...ct,
+              //       user: ct.user ? ct.user.fullname() : '...',
+              //     };
+              //   }),
+              // };
+            });
+          }),
+          //.flatMap((res) => res.cut_history),
+        };
+      })
+      .pop();
   }
 }

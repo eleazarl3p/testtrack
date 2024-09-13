@@ -4,13 +4,9 @@ import {
   Param,
   Query,
   ParseIntPipe,
-  Post,
-  Body,
   Req,
 } from '@nestjs/common';
 import { MemberService } from './member.service';
-import { MemberToAreaDto } from './dto/member-to-area.dto';
-import { ValidateMemberAreaPipe } from './dto/validatea-ma-pipe';
 
 @Controller('member')
 export class MemberController {
@@ -36,29 +32,6 @@ export class MemberController {
     @Param('jobid', ParseIntPipe) jobid: number,
     @Param('id', ParseIntPipe) _id: number,
   ) {
-    return this.memberService.findOne(jobid, _id);
-  }
-
-  @Post('/area/:areaId')
-  async moveToArea(
-    @Param('areaId', ParseIntPipe) areaId: number,
-    @Body(new ValidateMemberAreaPipe()) membertoAreaDto: MemberToAreaDto[],
-    @Req() req: any,
-  ) {
-    await this.memberService.moveToArea(areaId, membertoAreaDto);
-  }
-
-  @Get('available/area/:jobId/:paqueteId/:areaId')
-  async availableMembers(
-    @Param('jobId', ParseIntPipe) jobId: number,
-    @Param('paqueteId', ParseIntPipe) paqueteId: number,
-    @Param('areaId', ParseIntPipe) areaId: number,
-  ) {
-    const members = await this.memberService.availableMembers(
-      jobId,
-      paqueteId,
-      areaId,
-    );
-    return members;
+    return this.memberService.findOne(_id);
   }
 }

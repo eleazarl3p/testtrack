@@ -6,17 +6,16 @@ import { Member } from './entities/member.entity';
 
 import { MemberMaterial } from './entities/membermaterial.entity';
 import { MemberMaterialService } from './membermaterial.service';
-import { MemberArea } from './entities/memberarea.entity';
+
 import { TaskModule } from 'src/task/task.module';
-import { MemberAreaService } from './member-area.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Member, MemberMaterial, MemberArea]),
+    TypeOrmModule.forFeature([Member, MemberMaterial]),
     forwardRef(() => TaskModule),
   ],
   controllers: [MemberController],
-  providers: [MemberService, MemberMaterialService, MemberAreaService],
+  providers: [MemberService, MemberMaterialService],
   exports: [MemberService, MemberMaterialService],
 })
 export class MemberModule {}

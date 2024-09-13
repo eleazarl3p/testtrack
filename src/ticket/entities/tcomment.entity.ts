@@ -23,6 +23,6 @@ export class Tcomment extends BaseEntity {
   @ManyToOne(() => User)
   user: User;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 }
