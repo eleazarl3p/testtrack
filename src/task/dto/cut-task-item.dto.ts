@@ -6,7 +6,7 @@ export class CutTaskItemDto {
   task_id: number;
 
   @IsNumber()
-  task_quantity: number;
+  task_assigned: number;
 
   @IsArray()
   @ValidateNested({ each: true })

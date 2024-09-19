@@ -16,9 +16,9 @@ import { TaskService } from './task.service';
 import { TaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CustomTaskValitationPipe } from './dto/validate-task.pipe';
-import { CutItemDto, CutTaskItemDto } from './dto/update-tast-item.dto';
+import { CutItemDto, CutTaskItemDto } from './dto/cut-task-item.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { TaskToAreaDto } from './dto/member-to-area.dto';
+import { TaskAreaHistoryDto, TaskToAreaDto } from './dto/task-to-area.dto';
 
 @Controller('task')
 @UseGuards(AuthGuard('jwt'))
@@ -30,30 +30,10 @@ export class TaskController {
     return this.taskService.create(tasks);
   }
 
-  @Post('cut-materials')
-  async cutTaskItems(@Body() cutItemDto: CutItemDto[], @Req() req: any) {
+  @Post('area/to-qc/')
+  async moveToArea(@Body() taskToAreaDto: TaskToAreaDto[], @Req() req: any) {
     const userId = req.user.sub;
-    // console.log(userId);
-    return await this.taskService.cutTaskItems(cutItemDto, userId);
-  }
-
-  @Post('move-to-area/:area')
-  async moveToArea(
-    @Param('area', ParseIntPipe) areaId: number,
-    @Body() taskToAreaDto: TaskToAreaDto[],
-    @Req() req: any,
-  ) {
-    const userId = req.user.sub;
-    return await this.taskService.moveToArea(areaId, taskToAreaDto, userId);
-  }
-
-  @Get('machine/pending-tasks/:machine/:paquete')
-  pendingTaskMachine(
-    @Param('machine', ParseIntPipe) machineId: number,
-    @Param('paquete', ParseIntPipe) paqueteId: number,
-    @Query('all', ParseBoolPipe) all: boolean,
-  ) {
-    return this.taskService.pendingTaskMachine(machineId, paqueteId, all);
+    return await this.taskService.moveToArea(taskToAreaDto, userId);
   }
 
   @Get('area/pending-tasks/:area/:paquete')
@@ -65,11 +45,62 @@ export class TaskController {
     return this.taskService.pendingTaskArea(areaId, paqueteId, all);
   }
 
-  @Get('recently-cut-materials/:paquete')
+  @Post('machine/cut-materials')
+  async cutTaskItems(@Body() cutItemDto: CutItemDto[], @Req() req: any) {
+    const userId = req.user.sub;
+    // console.log(userId);
+    return await this.taskService.cutTaskItems(cutItemDto, userId);
+  }
+
+  @Get('machine/pending-tasks/:machine/:paquete')
+  pendingTaskMachine(
+    @Param('machine', ParseIntPipe) machineId: number,
+    @Param('paquete', ParseIntPipe) paqueteId: number,
+    @Query('all', ParseBoolPipe) all: boolean,
+  ) {
+    return this.taskService.pendingTaskMachine(machineId, paqueteId, all);
+  }
+
+  @Get('qc/recently-cut-materials/:paquete')
   async recentlyCutMaterials(
     @Param('paquete', ParseIntPipe) paqueteId: number,
   ) {
     return await this.taskService.recentlyCutMaterials(paqueteId);
+  }
+
+  @Get('qc/completed-tasks/:paquete')
+  async completedTasks(@Param('paquete', ParseIntPipe) paqueteId: number) {
+    return await this.taskService.qcCompletedTasks(paqueteId);
+  }
+
+  @Patch('qc/review-materials/:area')
+  async reviewCutMaterials(
+    @Body() cutTaskItemDto: CutTaskItemDto[],
+    @Param('area', ParseIntPipe) areaId: number,
+    @Req() req: any,
+  ) {
+    const userId = req.user.sub;
+
+    return await this.taskService.qcReviewCutMaterials(
+      cutTaskItemDto,
+      areaId,
+      userId,
+    );
+  }
+
+  @Patch('qc/review-member/:area')
+  async reviewMember(
+    @Body() taskAreaHistoryDto: TaskAreaHistoryDto[],
+    @Param('area', ParseIntPipe) areaId: number,
+    @Req() req: any,
+  ) {
+    const userId = req.user.sub;
+
+    return await this.taskService.qcReviewMember(
+      taskAreaHistoryDto,
+      areaId,
+      userId,
+    );
   }
 
   // @Get('fully-cut-tasks/:paquete')
@@ -89,25 +120,5 @@ export class TaskController {
   @Patch('expected/date/update')
   async update(@Body() updateTaskDto: UpdateTaskDto[]) {
     return await this.taskService.update(updateTaskDto);
-  }
-
-  @Patch('review-materials/:area')
-  async reviewCutMaterials(
-    @Body() cutTaskItemDto: CutTaskItemDto[],
-    @Param('area', ParseIntPipe) areaId: number,
-    @Req() req: any,
-  ) {
-    const userId = req.user.sub;
-
-    return await this.taskService.reviewCutMaterials(
-      cutTaskItemDto,
-      areaId,
-      userId,
-    );
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(+id);
   }
 }

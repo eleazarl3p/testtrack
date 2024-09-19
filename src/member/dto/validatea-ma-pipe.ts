@@ -1,6 +1,6 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { TaskToAreaDto } from '../../task/dto/member-to-area.dto';
+import { TaskToAreaDto } from '../../task/dto/task-to-area.dto';
 import { validate } from 'class-validator';
 
 export class ValidateMemberAreaPipe implements PipeTransform {

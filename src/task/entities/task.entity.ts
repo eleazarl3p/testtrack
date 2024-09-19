@@ -17,8 +17,8 @@ export class Task extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 
-  @Column()
-  quantity: number;
+  // @Column()
+  // quantity: number;
 
   @Column({ type: 'datetime' })
   expected_date: Date;

@@ -218,6 +218,8 @@ export class MemberService {
         .leftJoin('member.tasks', 'task')
         .leftJoin('member.paquete', 'paquete')
         .select('member._id', 'member_id')
+        // .addSelect('member.mem_desc', "desc")
+        // .addSelect('member.main_material', "main_material")
         .addSelect(
           "CONCAT(member.mem_desc, ' ', member.main_material)",
           'details',
@@ -225,12 +227,13 @@ export class MemberService {
         .addSelect('member.piecemark', 'piecemark')
         .addSelect('member.quantity', 'total')
         .addSelect(
-          'COALESCE(member.quantity - SUM(task.quantity), member.quantity)',
+          'COALESCE(member.quantity - COUNT(task._id), member.quantity)',
           'pending',
         )
         .where('member.paquete_id = :paquete_id', { paquete_id })
         .groupBy('member._id')
-        .having('COALESCE(SUM(task.quantity), 0) < member.quantity')
+        // .having('COALESCE(SUM(task.quantity), 0) < member.quantity')
+        .having('COALESCE(COUNT(task._id), 0) < member.quantity')
         .getRawMany();
     } catch (error) {
       console.log(error);

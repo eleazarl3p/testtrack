@@ -78,7 +78,7 @@ export class TeamService {
       tasks: team.tasks.map((task) => {
         return {
           _id: task._id,
-          quantity: task.quantity,
+          quantity: 1, //task.quantity,
           expected_date: task.expected_date,
           piecemark: task.member.piecemark,
           desc: `${task.member.mem_desc} ${task.member.main_material}`,

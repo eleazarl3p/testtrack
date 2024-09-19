@@ -8,10 +8,17 @@ import { MemberModule } from 'src/member/member.module';
 import { ShapeModule } from 'src/shape/shape.module';
 import { CutHistory } from './entities/cut-history.entity';
 import { TaskArea } from './entities/taskarea.entity';
+import { TaskAreaHistory } from './entities/taskarea-history';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, TaskItem, CutHistory, TaskArea]),
+    TypeOrmModule.forFeature([
+      Task,
+      TaskItem,
+      CutHistory,
+      TaskArea,
+      TaskAreaHistory,
+    ]),
     forwardRef(() => MemberModule),
     ShapeModule,
   ],
