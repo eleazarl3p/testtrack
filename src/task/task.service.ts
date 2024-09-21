@@ -416,21 +416,22 @@ export class TaskService {
             reviewed_by: { _id: userId } as User,
           },
         );
-        if (quantity == 0) {
-          const t = await this.taskAreaHistoryRepo.findOne({
-            where: { _id },
-            relations: { task_area: true },
-          });
+        //if (quantity == 0) {
+        //   const t = await this.taskAreaHistoryRepo.findOne({
+        //     where: { _id },
+        //     relations: { task_area: true },
+        //   });
 
-          if (t != null) {
-            const newHistory = this.taskAreaHistoryRepo.create({
-              task_area: t.task_area,
-              user: { _id: userId } as User,
-            });
+        //   if (t != null) {
+        //     const newHistory = this.taskAreaHistoryRepo.create({
+        //       task_area: t.task_area,
+        //       user: { _id: userId } as User,
+        //     });
 
-            await newHistory.save();
-          }
-        } else {
+        //     await newHistory.save();
+        //   }
+        // } else {
+        if (quantity > 0) {
           const toArea = this.taskAreaRepo.create({
             //quantity: task_quantity,
             area: { _id: areaId } as Area,
