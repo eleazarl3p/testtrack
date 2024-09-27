@@ -67,7 +67,7 @@ export class PaqueteService {
 
           if (!material) {
             mat['barcode'] = barcode;
-            material = await this.materialService.create(mat);
+            material = await this.materialService.create(mat, paquete._id);
           }
 
           const mm_ = await this.mmService.findOne(newMember._id, material._id);
@@ -129,7 +129,7 @@ export class PaqueteService {
 
           if (!material) {
             mat['barcode'] = mtrlbarcode;
-            material = await this.materialService.create(mat);
+            material = await this.materialService.create(mat, paquete._id);
           }
 
           const mm = await this.mmService.findOne(

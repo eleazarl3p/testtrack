@@ -1,4 +1,5 @@
 import { Job } from 'src/job/entites/job.entity';
+import { Material } from 'src/material/entities/material.entity';
 import { Member } from 'src/member/entities/member.entity';
 import {
   BaseEntity,
@@ -30,7 +31,12 @@ export class Paquete extends BaseEntity {
   @OneToMany(() => Member, (member) => member.paquete)
   members: Member[];
 
-  @ManyToOne(() => Job, (job) => job.paquetes)
+  @OneToMany(() => Material, (material) => material.paquete)
+  materials: Material[];
+
+  @ManyToOne(() => Job, (job) => job.paquetes, {
+    onDelete: 'CASCADE',
+  })
   job: Job;
 
   @CreateDateColumn({ type: 'datetime' })

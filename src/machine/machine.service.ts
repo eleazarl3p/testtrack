@@ -37,28 +37,29 @@ export class MachineService {
 
   async findAll() {
     const machines = await this.machineRepo.find({
-      relations: {
-        tasks_items: { task: { member: { paquete: true } } },
-      },
-      order: {
-        tasks_items: { task: { member: { paquete: { name: 'ASC' } } } },
-      },
+      // relations: {
+      //   tasks_items: { task: { member: { paquete: true } } },
+      // },
+      // order: {
+      //   tasks_items: { task: { member: { paquete: { name: 'ASC' } } } },
+      // },
     });
 
-    return machines.map((machine) => {
-      const paquetes = {};
-      machine.tasks_items.forEach((ti) => {
-        paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
-      });
+    return machines;
+    // return machines.map((machine) => {
+    //   const paquetes = {};
+    //   machine.tasks_items.forEach((ti) => {
+    //     paquetes[ti.task.member.paquete._id] = ti.task.member.paquete.name;
+    //   });
 
-      return {
-        _id: machine._id,
-        image: machine.image,
-        name: machine.name,
-        paquetes,
-        shapes: machine.shapes,
-      };
-    });
+    //   return {
+    //     _id: machine._id,
+    //     image: machine.image,
+    //     name: machine.name,
+    //     paquetes,
+    //     shapes: machine.shapes,
+    //   };
+    // });
   }
 
   // async findOne(_id: number) {

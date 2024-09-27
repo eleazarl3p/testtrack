@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Level } from 'src/level/entities/level.entity';
+import { Team } from 'src/team/entities/team.entity';
 
 @Injectable()
 export class UserService {
@@ -58,7 +60,7 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const { password, ...userData } = createUserDto;
+    const { password, level, team, ...userData } = createUserDto;
 
     const hashedPassword = await this.hashPassword(password);
 
@@ -66,6 +68,8 @@ export class UserService {
       ...userData,
       password: hashedPassword,
     });
+    newUser.level = level ? ({ _id: level } as Level) : null;
+    newUser.team = team ? ({ _id: team } as Team) : null;
     try {
       return await this.userRepo.save(newUser);
     } catch (error) {
@@ -78,13 +82,25 @@ export class UserService {
   async updateUser(_id: number, updateUserDto: UpdateUserDto) {
     const { password } = updateUserDto;
 
-    if (password.length < 20) {
+    if (password.length < 15) {
       const hashedPasword = await this.hashPassword(password);
       updateUserDto.password = hashedPasword;
     }
 
     try {
-      this.userRepo.update({ _id }, updateUserDto);
+      await this.userRepo.update(
+        { _id },
+        {
+          ...updateUserDto,
+          level: updateUserDto.level
+            ? ({ _id: updateUserDto.level } as Level)
+            : null,
+
+          team: updateUserDto.team
+            ? ({ _id: updateUserDto.team } as Team)
+            : null,
+        },
+      );
       return { message: 'user has been updated' };
     } catch (error) {
       return new BadRequestException(error.message);

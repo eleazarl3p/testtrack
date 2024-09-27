@@ -35,7 +35,9 @@ export class Member extends BaseEntity {
   @Column()
   quantity: number;
 
-  @ManyToOne(() => Paquete, (paquete) => paquete.members)
+  @ManyToOne(() => Paquete, (paquete) => paquete.members, {
+    onDelete: 'CASCADE',
+  })
   paquete: Paquete;
 
   @CreateDateColumn({ type: 'datetime' })

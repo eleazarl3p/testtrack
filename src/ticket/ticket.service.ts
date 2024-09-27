@@ -242,26 +242,26 @@ export class TicketService {
     //   })
     //   .filter(Boolean);
 
-    const filteredMembers = (
-      await Promise.all(
-        members.map(async (mb) => {
-          const count = await this.countMemberTicket(mb._id);
-          if (mb.quantity > count) {
-            const available = mb.quantity - count;
-            delete mb.quantity;
-            return {
-              ...mb,
-              available,
-            };
-          }
+    // const filteredMembers = (
+    //   await Promise.all(
+    //     members.map(async (mb) => {
+    //       const count = await this.countMemberTicket(mb._id);
+    //       if (mb.quantity > count) {
+    //         const available = mb.quantity - count;
+    //         delete mb.quantity;
+    //         return {
+    //           ...mb,
+    //           available,
+    //         };
+    //       }
 
-          return null;
-        }),
-      )
-    ).filter(Boolean);
+    //       return null;
+    //     }),
+    //   )
+    // ).filter(Boolean);
 
-    // return fullyCut;
-    return filteredMembers;
+    return members;
+    //return filteredMembers;
   }
 
   async countMemberTicket(member_id: number) {

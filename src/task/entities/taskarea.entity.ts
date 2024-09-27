@@ -25,25 +25,14 @@ export class TaskArea extends BaseEntity {
   @Column()
   area_id: number;
 
-  // @Column()
-  // assigned: number;
-
-  // @Column({ default: 0 })
-  // completed: number;
-
-  // @Column({ nullable: true })
-  // approved: boolean;
-
-  // @ManyToOne(() => User)
-  // user: User;
-
-  // @ManyToOne(() => User)
-  // reviewed_by: User;
-
-  @ManyToOne(() => Task, (task) => task.task_area)
+  @ManyToOne(() => Task, (task) => task.task_area, {
+    onDelete: 'CASCADE',
+  })
   task: Task;
 
-  @ManyToOne(() => Area, (area) => area.task_area)
+  @ManyToOne(() => Area, (area) => area.task_area, {
+    onDelete: 'CASCADE',
+  })
   area: Area;
 
   @OneToMany(() => TaskAreaHistory, (tah) => tah.task_area)

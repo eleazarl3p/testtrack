@@ -6,7 +6,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { Task } from './task.entity';
 import { Machine } from 'src/machine/entities/machine.entity';
@@ -20,13 +19,19 @@ export class TaskItem extends BaseEntity {
   @Column()
   assigned: number;
 
-  @ManyToOne(() => Material, (material) => material.task_items)
+  @ManyToOne(() => Material, (material) => material.task_items, {
+    onDelete: 'CASCADE',
+  })
   material: Material;
 
-  @ManyToOne(() => Task, (task) => task.items)
+  @ManyToOne(() => Task, (task) => task.items, {
+    onDelete: 'CASCADE',
+  })
   task: Task;
 
-  @ManyToOne(() => Machine, (machine) => machine.tasks_items)
+  @ManyToOne(() => Machine, (machine) => machine.tasks_items, {
+    onDelete: 'SET NULL',
+  })
   machine: Machine;
 
   @OneToMany(() => CutHistory, (ch) => ch.task_item)

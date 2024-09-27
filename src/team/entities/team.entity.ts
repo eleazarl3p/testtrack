@@ -1,4 +1,5 @@
 import { Task } from 'src/task/entities/task.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -18,6 +19,9 @@ export class Team {
 
   @OneToMany(() => Task, (task) => task.team)
   tasks: Task[];
+
+  @OneToMany(() => User, (user) => user.team)
+  users: User[];
 
   @DeleteDateColumn({ type: 'datetime' })
   deleted_at: Date;

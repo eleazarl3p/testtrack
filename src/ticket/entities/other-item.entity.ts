@@ -25,12 +25,14 @@ export class OtherItem extends BaseEntity {
   @Column({ default: 0 })
   delivered: number;
 
-  @ManyToOne(() => Ticket, (tk) => tk.other_items)
+  @ManyToOne(() => Ticket, (tk) => tk.other_items, {
+    onDelete: 'CASCADE',
+  })
   ticket: Ticket;
 
   @Column({ type: 'datetime', nullable: true })
   last_update: Date | null;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   user: User;
 }

@@ -17,10 +17,12 @@ export class Tcomment extends BaseEntity {
   @Column()
   details: string;
 
-  @ManyToOne(() => Ticket, (ticket) => ticket.comments)
+  @ManyToOne(() => Ticket, (ticket) => ticket.comments, {
+    onDelete: 'CASCADE',
+  })
   ticket: Ticket;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   user: User;
 
   @CreateDateColumn({ type: 'datetime' })

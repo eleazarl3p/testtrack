@@ -42,16 +42,18 @@ export class Ticket extends BaseEntity {
   @OneToMany(() => OtherItem, (ot) => ot.ticket)
   other_items: OtherItem[];
 
-  @ManyToOne(() => User, (usr) => usr.tickets)
+  @ManyToOne(() => User, (usr) => usr.tickets, { onDelete: 'SET NULL' })
   created__by__user: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   loaded__by__user: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   received__by__user: User;
 
-  @ManyToOne(() => Truck)
+  @ManyToOne(() => Truck, {
+    onDelete: 'CASCADE',
+  })
   truck: Truck;
 
   @CreateDateColumn({ type: 'datetime' })

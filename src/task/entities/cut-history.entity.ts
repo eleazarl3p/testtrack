@@ -27,13 +27,19 @@ export class CutHistory extends BaseEntity {
   @UpdateDateColumn({ type: 'datetime' })
   last_update: Date;
 
-  @ManyToOne(() => TaskItem, (ti) => ti.cut_history)
+  @ManyToOne(() => TaskItem, (ti) => ti.cut_history, {
+    onDelete: 'CASCADE',
+  })
   task_item: TaskItem;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, {
+    onDelete: 'SET NULL',
+  })
   user: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, {
+    onDelete: 'SET NULL',
+  })
   reviewed_by: User;
 
   @CreateDateColumn({ type: 'datetime' })

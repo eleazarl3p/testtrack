@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { TaskArea } from './taskarea.entity';
 
@@ -22,12 +23,17 @@ export class TaskAreaHistory extends BaseEntity {
   @Column({ nullable: true })
   approved: boolean;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   user: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   reviewed_by: User;
 
-  @ManyToOne(() => TaskArea, (ta) => ta.history)
+  @ManyToOne(() => TaskArea, (ta) => ta.history, {
+    onDelete: 'CASCADE',
+  })
   task_area: TaskArea;
+
+  @UpdateDateColumn({ type: 'datetime' })
+  date_approval: Date;
 }

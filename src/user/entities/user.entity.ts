@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Level } from 'src/level/entities/level.entity';
+import { Team } from 'src/team/entities/team.entity';
 import { Ticket } from 'src/ticket/entities/ticket.entity';
 
 // import { Ticket_Event } from 'src/ticket/entities/ticket_event.etity';
@@ -7,6 +8,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -75,11 +78,14 @@ export class User {
   //   @OneToMany(() => Member_History, (mbh) => mbh.user)
   //   worked_members: Member_History[];
 
-  @ManyToOne(() => Level, (level) => level.users)
+  @ManyToOne(() => Level, (level) => level.users, { onDelete: 'SET NULL' })
   level: Level;
 
   @OneToMany(() => Ticket, (tkts) => tkts.created__by__user)
   tickets: Ticket[];
+
+  @ManyToOne(() => Team, (team) => team.users, { eager: true })
+  team: Team;
 
   //   @OneToMany(() => Shipping_State, (shps) => shps.user)
   //   shipments: Shipping_State;

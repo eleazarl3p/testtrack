@@ -11,7 +11,6 @@ import {
   MinLength,
 } from 'class-validator';
 import { AuthorizedApps, UserRole } from '../entities/user.entity';
-import { Level } from 'src/level/entities/level.entity';
 
 const allowedApps = [AuthorizedApps.MOBILE, AuthorizedApps.DESKTOP];
 const allowedRoles = [UserRole.ADMIN, UserRole.EDITOR, UserRole.NOTASSIGNED];
@@ -49,7 +48,12 @@ export class CreateUserDto {
   @ApiProperty({ example: 2 })
   @IsNumber()
   @IsOptional()
-  level: Level;
+  level: number;
+
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  @IsOptional()
+  team: number;
 
   @ApiProperty({ example: 'editor' })
   @IsString()

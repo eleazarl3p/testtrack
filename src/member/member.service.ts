@@ -39,7 +39,10 @@ export class MemberService {
         relations: {
           paquete: { job: true },
           member_material: { material: true },
-          tasks: { items: { material: true, cut_history: true } },
+          tasks: {
+            items: { material: true, cut_history: true },
+            task_area: { history: true },
+          },
         },
         order: {
           //tasks: { items: { last_update: 'asc' } },
@@ -87,7 +90,10 @@ export class MemberService {
       relations: {
         member_material: { material: true },
         paquete: true,
-        tasks: { items: { material: true, cut_history: true } },
+        tasks: {
+          items: { material: true, cut_history: true },
+          task_area: { history: { user: true, reviewed_by: true }, area: true },
+        },
       },
     });
 
@@ -102,6 +108,8 @@ export class MemberService {
         return this.mmService.countMaterialsGivenMember(mat.material_id, _id);
       }),
     );
+
+    //return groupedMaterials;
     // const groupedMaterials = member.member_material.reduce(
     //   (acc, mm) => {
     //     if (!acc[mm.material.piecemark]) {
@@ -171,9 +179,56 @@ export class MemberService {
       quantity: member.quantity,
       weight: Math.round(weight),
       materials: groupedMaterials,
-      areas: [],
-    };
+      areas: !member.tasks.length
+        ? []
+        : Object.values(
+            member.tasks
+              .flatMap((t) => t.task_area)
+              .flatMap((ta) => {
+                return ta.history
+                  .map((h) => {
+                    if (h.approved) {
+                      return {
+                        area: ta.area.name,
+                        user: h.user.fullname(),
+                        reviewed_by:
+                          h.reviewed_by != null ? h.reviewed_by.fullname() : '',
+                        date_of_approval: h.date_approval,
+                      };
+                    }
+                  })
+                  .filter(Boolean);
+              })
+              .reduce(
+                (acc, h) => {
+                  if (!acc[h.area]) {
+                    acc[h.area] = {
+                      area: h.area,
+                      user: h.user,
+                      reviewed_by: h.reviewed_by,
+                      date_of_approval: h.date_of_approval,
+                      quantity: 0,
+                    };
+                  }
 
+                  acc[h.area].quantity += 1;
+                  const dateA = new Date(
+                    acc[h.area].date_of_approval,
+                  ).getTime();
+                  const dateB = new Date(h.date_of_approval).getTime();
+                  if (dateA < dateB)
+                    acc[h.area].date_of_approval = h.date_of_approval;
+
+                  return acc;
+                },
+                {} as Record<string, any>,
+              ),
+          ),
+    };
+    // Object.values(
+    //   member.tasks[0].task_area
+
+    // ),
     // const ma = newMember.areas.reduce(
     //   (acc, ma) => {
     //     if (!acc[ma.area._id]) {

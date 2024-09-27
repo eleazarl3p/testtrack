@@ -34,10 +34,14 @@ export class Job extends BaseEntity {
   @OneToMany(() => Paquete, (paquete) => paquete.job)
   paquetes: Paquete[];
 
-  @ManyToOne(() => Contact, (contact) => contact.installed_job)
+  @ManyToOne(() => Contact, (contact) => contact.installed_job, {
+    onDelete: 'SET NULL',
+  })
   installer: Contact;
 
-  @ManyToOne(() => Contact, (contact) => contact.gc_job)
+  @ManyToOne(() => Contact, (contact) => contact.gc_job, {
+    onDelete: 'SET NULL',
+  })
   gc: Contact;
 
   @CreateDateColumn({ type: 'datetime' })

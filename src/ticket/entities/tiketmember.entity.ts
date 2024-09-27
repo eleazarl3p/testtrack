@@ -33,6 +33,6 @@ export class TicketMember extends BaseEntity {
   @Column({ type: 'datetime', nullable: true })
   last_update: Date | null;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   user: User;
 }

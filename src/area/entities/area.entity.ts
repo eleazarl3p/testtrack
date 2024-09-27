@@ -15,14 +15,9 @@ export class Area {
   @Column({ default: 'xmark' })
   image: string;
 
+  @Column({ unique: true })
+  rank: number;
+
   @OneToMany(() => TaskArea, (ta) => ta.area)
   task_area: TaskArea[];
-  // @OneToMany(() => MaterialHistory, (mh) => mh.area)
-  // mat_history: MaterialHistory[];
-
-  //   @OneToMany(() => Member_History, (mmh) => mmh.area)
-  //   mem_history: Member_History[];
-
-  //   @OneToMany(() => Shipping_State, (shp) => shp.area)
-  //   ship_states: Shipping_State[];
 }

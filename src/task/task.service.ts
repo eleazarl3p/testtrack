@@ -54,7 +54,7 @@ export class TaskService {
   }
 
   async create(createTaskDto: TaskDto[]) {
-    const assignedMember = [];
+    const assignedMember = {} as Record<string, any>;
     const notAssignedMember = [];
 
     try {
@@ -83,17 +83,20 @@ export class TaskService {
           const task = new Task();
           task.member = { _id: member_id } as Member;
           task.team = { _id: team_id } as Team;
-          //task.quantity = assigned;
+
           task.expected_date = this.calculateDate(date_delta);
           task.estimated_date = task.expected_date;
 
           const savedTask = await task.save();
 
-          assignedMember.push({
-            piecemark,
-            quantity: 1,
-          });
+          if (!assignedMember[piecemark]) {
+            assignedMember[piecemark] = {
+              piecemark,
+              quantity: 0,
+            };
+          }
 
+          assignedMember[piecemark].quantity += 1;
           const machineTasks: TaskItem[] = [];
           for (const material of member.materials) {
             const materialShape = material.section.match(sectionRegex).at(0);
@@ -136,7 +139,7 @@ export class TaskService {
       throw error;
     }
 
-    return { assignedMember, notAssignedMember };
+    return { assignedMember: Object.values(assignedMember), notAssignedMember };
   }
 
   async cutTaskItems(cutItemDtos: CutItemDto[], userId: number) {
@@ -147,8 +150,12 @@ export class TaskService {
         cutting.user = { _id: userId } as User;
 
         await cutting.save();
-      } catch (error) {}
+      } catch (error) {
+        console.log('error cut material', error);
+      }
     }
+
+    return 'successfully cut';
   }
 
   formatTasksArea(tasks: TaskArea[]): any {
@@ -275,7 +282,7 @@ export class TaskService {
     });
 
     const tasks = this.formatTaskItems(itms);
-
+    // return tasks.filter((t) => t.member.piecemark == '13B1');
     if (all) return tasks;
     return tasks
       .map((tsk) => {

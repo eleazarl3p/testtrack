@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Material } from './entities/material.entity';
 import { Repository } from 'typeorm';
 import { MemberMaterialService } from 'src/member/membermaterial.service';
+import { Paquete } from 'src/paquete/entities/paquete.entity';
 
 @Injectable()
 export class MaterialService {
@@ -18,9 +19,11 @@ export class MaterialService {
     private readonly mmService: MemberMaterialService,
   ) {}
 
-  async create(createMaterialDto: CreateMaterialDto) {
+  async create(createMaterialDto: CreateMaterialDto, paqueteId: number) {
     try {
-      return this.materialRepo.save(createMaterialDto);
+      const material = this.materialRepo.create(createMaterialDto);
+      material.paquete = { _id: paqueteId } as Paquete;
+      return await material.save();
       // newMaterial.barcode = `W${}-${newMaterial.piecemark.padStart(5, '0')}`;
       // return await this.materialRepo.save(newMaterial);
     } catch (error) {

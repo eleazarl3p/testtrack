@@ -1,15 +1,18 @@
 import { MemberMaterial } from 'src/member/entities/membermaterial.entity';
+import { Paquete } from 'src/paquete/entities/paquete.entity';
 import { TaskItem } from 'src/task/entities/task-item.entity';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
-export class Material {
+export class Material extends BaseEntity {
   @PrimaryGeneratedColumn()
   _id: number;
 
@@ -63,6 +66,11 @@ export class Material {
 
   @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
+
+  @ManyToOne(() => Paquete, (paquete) => paquete.materials, {
+    onDelete: 'CASCADE',
+  })
+  paquete: Paquete;
 
   dbt() {
     const [d, b] = this.section

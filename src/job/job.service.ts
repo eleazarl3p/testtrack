@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Job } from './entites/job.entity';
-import { BaseEntity, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateJobDto } from './dto/create-job.dto';
 import { Paquete } from 'src/paquete/entities/paquete.entity';
@@ -28,7 +33,7 @@ export class JobService {
     try {
       return await this.jobRepo.save(md);
     } catch (error) {
-      return null;
+      throw new ConflictException('Job name not available.');
     }
   }
 
@@ -41,7 +46,6 @@ export class JobService {
       relations: { paquetes: true, installer: true, gc: true },
       order: { paquetes: { name: 'asc' } },
     });
-
     return modelos;
   }
 
@@ -67,9 +71,9 @@ export class JobService {
     );
   }
 
-  async delete(_id: number) {
+  async delete(_id: number, userId: number) {
     try {
-      return this.jobRepo.softDelete(_id);
+      this.jobRepo.delete(_id);
     } catch (error) {}
   }
 
@@ -98,6 +102,7 @@ export class JobService {
       if (isNaN(numA) && !isNaN(numB)) {
         return -1;
       }
+
       if (!isNaN(numA) && isNaN(numB)) {
         return 1;
       }

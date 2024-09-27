@@ -38,6 +38,7 @@ export class JobController {
   @Delete(':id')
   //delete(@Param('id') id: number, @GetUser() user) {
   delete(@Param('id') id: number, @Req() req: any) {
-    return this.jobService.delete(id);
+    const userId = req.user.sub;
+    return this.jobService.delete(id, userId);
   }
 }

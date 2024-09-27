@@ -17,6 +17,9 @@ export class Level {
   @Column({ unique: true })
   name: string;
 
+  @Column({ unique: true })
+  rank: number;
+
   @ManyToMany(() => Area)
   @JoinTable()
   areas: Area[];

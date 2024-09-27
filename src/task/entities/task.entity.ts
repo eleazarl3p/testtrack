@@ -26,10 +26,14 @@ export class Task extends BaseEntity {
   @Column({ type: 'datetime' })
   estimated_date: Date;
 
-  @ManyToOne(() => Member)
+  @ManyToOne(() => Member, {
+    onDelete: 'CASCADE',
+  })
   member: Member;
 
-  @ManyToOne(() => Team, (team) => team.tasks)
+  @ManyToOne(() => Team, (team) => team.tasks, {
+    onDelete: 'SET NULL',
+  })
   team: Team;
 
   @OneToMany(() => TaskItem, (item) => item.task)

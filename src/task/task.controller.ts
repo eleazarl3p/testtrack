@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Req,
   UseGuards,
   ParseIntPipe,
@@ -16,9 +15,9 @@ import { TaskService } from './task.service';
 import { TaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CustomTaskValitationPipe } from './dto/validate-task.pipe';
-import { CutItemDto, CutTaskItemDto } from './dto/cut-task-item.dto';
+import { CutItemDto } from './dto/cut-task-item.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { TaskAreaHistoryDto, TaskToAreaDto } from './dto/task-to-area.dto';
+import { TaskToAreaDto } from './dto/task-to-area.dto';
 
 @Controller('task')
 @UseGuards(AuthGuard('jwt'))
@@ -59,48 +58,6 @@ export class TaskController {
     @Query('all', ParseBoolPipe) all: boolean,
   ) {
     return this.taskService.pendingTaskMachine(machineId, paqueteId, all);
-  }
-
-  @Get('qc/recently-cut-materials/:paquete')
-  async recentlyCutMaterials(
-    @Param('paquete', ParseIntPipe) paqueteId: number,
-  ) {
-    return await this.taskService.recentlyCutMaterials(paqueteId);
-  }
-
-  @Get('qc/completed-tasks/:paquete')
-  async completedTasks(@Param('paquete', ParseIntPipe) paqueteId: number) {
-    return await this.taskService.qcCompletedTasks(paqueteId);
-  }
-
-  @Patch('qc/review-materials/:area')
-  async reviewCutMaterials(
-    @Body() cutTaskItemDto: CutTaskItemDto[],
-    @Param('area', ParseIntPipe) areaId: number,
-    @Req() req: any,
-  ) {
-    const userId = req.user.sub;
-
-    return await this.taskService.qcReviewCutMaterials(
-      cutTaskItemDto,
-      areaId,
-      userId,
-    );
-  }
-
-  @Patch('qc/review-member/:area')
-  async reviewMember(
-    @Body() taskAreaHistoryDto: TaskAreaHistoryDto[],
-    @Param('area', ParseIntPipe) areaId: number,
-    @Req() req: any,
-  ) {
-    const userId = req.user.sub;
-
-    return await this.taskService.qcReviewMember(
-      taskAreaHistoryDto,
-      areaId,
-      userId,
-    );
   }
 
   // @Get('fully-cut-tasks/:paquete')

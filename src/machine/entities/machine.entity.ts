@@ -21,6 +21,9 @@ export class Machine extends BaseEntity {
   @Column({ default: 'scissors' })
   image: string;
 
+  @Column()
+  rank: number;
+
   @ManyToMany(() => Shape, (sh) => sh.machines, { eager: true })
   @JoinTable()
   shapes: Shape[];
