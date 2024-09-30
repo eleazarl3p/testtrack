@@ -73,7 +73,7 @@ export class JobService {
 
   async delete(_id: number, userId: number) {
     try {
-      this.jobRepo.delete(_id);
+      return await this.jobRepo.delete(_id);
     } catch (error) {}
   }
 

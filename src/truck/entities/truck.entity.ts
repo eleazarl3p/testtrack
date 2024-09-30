@@ -1,4 +1,10 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Truck extends BaseEntity {
@@ -10,4 +16,7 @@ export class Truck extends BaseEntity {
 
   @Column({ unique: true })
   barcode: string;
+
+  @DeleteDateColumn({ type: 'datetime' })
+  delete_at?: Date;
 }

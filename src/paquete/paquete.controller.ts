@@ -40,7 +40,7 @@ export class PaqueteController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paqueteService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.paqueteService.remove(id);
   }
 }

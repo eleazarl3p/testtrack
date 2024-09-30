@@ -8,13 +8,14 @@ import {
   Query,
   BadRequestException,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import validator from 'validator';
 
-@Controller('users')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -53,5 +54,15 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.updateUser(id, updateUserDto);
+  }
+
+  @Patch('restore/:id')
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.restore(id);
+  }
+
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.remove(id);
   }
 }

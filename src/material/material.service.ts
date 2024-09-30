@@ -27,7 +27,6 @@ export class MaterialService {
       // newMaterial.barcode = `W${}-${newMaterial.piecemark.padStart(5, '0')}`;
       // return await this.materialRepo.save(newMaterial);
     } catch (error) {
-      console.log(error.code);
       throw new ConflictException();
     }
   }

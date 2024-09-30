@@ -1,5 +1,11 @@
 import { Job } from 'src/job/entites/job.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum contactRole {
   INSTALLER = 'INSTALLER',
@@ -32,4 +38,7 @@ export class Contact {
   fullName() {
     return `${this.first_name} ${this.last_name}`;
   }
+
+  @DeleteDateColumn({ type: 'datetime' })
+  delete_at: Date;
 }

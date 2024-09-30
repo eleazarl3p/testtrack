@@ -24,10 +24,16 @@ export class TicketMember extends BaseEntity {
   @Column({ default: 0 })
   delivered: number;
 
-  @ManyToOne(() => Member, (member) => member.ticket_member)
+  @ManyToOne(() => Member, (member) => member.ticket_member, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   member: Member;
 
-  @ManyToOne(() => Ticket, (tk) => tk.ticket_member)
+  @ManyToOne(() => Ticket, (tk) => tk.ticket_member, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   ticket: Ticket;
 
   @Column({ type: 'datetime', nullable: true })

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -100,11 +101,19 @@ export class TeamService {
     };
   }
 
-  update(_id: number, updateTeamDto: UpdateTeamDto) {
-    return this.teamRepo.update({ _id }, { ...updateTeamDto });
+  async update(_id: number, updateTeamDto: UpdateTeamDto) {
+    try {
+      return this.teamRepo.update({ _id }, { ...updateTeamDto });
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 
-  remove(id: number) {
-    return this.teamRepo.softDelete(id);
+  async remove(id: number) {
+    try {
+      return await this.teamRepo.softDelete(id);
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 }

@@ -18,6 +18,7 @@ import { TaskAreaHistoryDto, TaskToAreaDto } from './dto/task-to-area.dto';
 import { TaskArea } from './entities/taskarea.entity';
 import { Area } from 'src/area/entities/area.entity';
 import { TaskAreaHistory } from './entities/taskarea-history';
+import { DeleteTaskDto } from './dto/delete-task.dto';
 
 @Injectable()
 export class TaskService {
@@ -130,8 +131,10 @@ export class TaskService {
             taskMachine.material = material;
             taskMachine.task = savedTask;
             taskMachine.machine = { _id: machineId } as Machine;
-            const savedTaskMachine = await taskMachine.save();
-            machineTasks.push(savedTaskMachine);
+            try {
+              const savedTaskMachine = await taskMachine.save();
+              machineTasks.push(savedTaskMachine);
+            } catch (error) {}
           }
         }
       }
@@ -150,9 +153,7 @@ export class TaskService {
         cutting.user = { _id: userId } as User;
 
         await cutting.save();
-      } catch (error) {
-        console.log('error cut material', error);
-      }
+      } catch (error) {}
     }
 
     return 'successfully cut';
@@ -245,7 +246,7 @@ export class TaskService {
       const notCompleted = ft.history.some(
         (h: { completed: number }) => h.completed == 0,
       );
-      console.log(notCompleted, ft.history.length);
+
       if (notCompleted || ft.history.length == 0) {
         return ft;
       }
@@ -554,5 +555,15 @@ export class TaskService {
         }
       } catch (error) {}
     }
+  }
+
+  async remove(deleteTaskDto: DeleteTaskDto[]) {
+    for (const a of deleteTaskDto) {
+      try {
+        await this.taskRepo.delete({ _id: a._id });
+      } catch (error) {}
+    }
+
+    return 'deleted';
   }
 }

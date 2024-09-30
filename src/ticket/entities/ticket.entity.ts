@@ -52,7 +52,7 @@ export class Ticket extends BaseEntity {
   received__by__user: User;
 
   @ManyToOne(() => Truck, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   truck: Truck;
 

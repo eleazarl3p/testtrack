@@ -81,8 +81,6 @@ export class PaqueteService {
           }
         }
       } catch (error) {
-        console.log(error);
-        console.log(error.code);
         //const barcode = `M${job.job_name}-${member.piecemark.padStart(6, '0')}`;
         //this.memberService.updateByCode(barcode, { ...member });
       }
@@ -146,8 +144,6 @@ export class PaqueteService {
           }
         }
       } catch (error) {
-        console.log(error);
-        console.log(error.code);
         // const barcode = `M${job.job_name}-${member.piecemark.padStart(5, '0')}`;
         // this.memberService.updateByCode(barcode, { ...member });
       }
@@ -159,7 +155,9 @@ export class PaqueteService {
   }
 
   async remove(_id: number) {
-    return await this.paqueteRepo.delete({ _id });
+    try {
+      return await this.paqueteRepo.delete({ _id });
+    } catch (error) {}
   }
 
   async getBarcode(id: number) {

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -8,6 +9,7 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { Repository } from 'typeorm';
 import { Contact } from './entities/contact.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { error } from 'console';
 
 @Injectable()
 export class ContactService {
@@ -52,6 +54,15 @@ export class ContactService {
   }
 
   async remove(_id: number) {
-    return await this.contactRepo.softDelete(_id);
+    try {
+      await this.contactRepo.softDelete(_id);
+      return 'Contact has been deleted.';
+    } catch (error) {
+      throw new BadRequestException('Unable to delete contact.');
+    }
+  }
+
+  async restore(_id: number) {
+    return await this.contactRepo.restore({ _id });
   }
 }

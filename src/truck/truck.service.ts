@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -46,6 +47,18 @@ export class TruckService {
   }
 
   async remove(_id: number) {
-    return await this.truckRepo.delete(_id);
+    try {
+      return await this.truckRepo.softDelete(_id);
+    } catch (error) {
+      throw new BadRequestException();
+    }
+  }
+
+  async restore(_id: number) {
+    try {
+      return await this.truckRepo.restore(_id);
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 }

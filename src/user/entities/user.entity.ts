@@ -7,6 +7,7 @@ import { Ticket } from 'src/ticket/entities/ticket.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
@@ -93,4 +94,7 @@ export class User {
   fullname() {
     return `${this.first_name} ${this.middle_name} ${this.last_name}`;
   }
+
+  @DeleteDateColumn({ type: 'datetime' })
+  delete_at?: Date;
 }

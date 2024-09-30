@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   Query,
   ParseBoolPipe,
+  Delete,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { TaskDto } from './dto/create-task.dto';
@@ -18,6 +19,7 @@ import { CustomTaskValitationPipe } from './dto/validate-task.pipe';
 import { CutItemDto } from './dto/cut-task-item.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TaskToAreaDto } from './dto/task-to-area.dto';
+import { DeleteTaskDto } from './dto/delete-task.dto';
 
 @Controller('task')
 @UseGuards(AuthGuard('jwt'))
@@ -77,5 +79,10 @@ export class TaskController {
   @Patch('expected/date/update')
   async update(@Body() updateTaskDto: UpdateTaskDto[]) {
     return await this.taskService.update(updateTaskDto);
+  }
+
+  @Delete('delete')
+  async remove(@Body() deleteTaskDto: DeleteTaskDto[]) {
+    return await this.taskService.remove(deleteTaskDto);
   }
 }

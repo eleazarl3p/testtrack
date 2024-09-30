@@ -18,7 +18,6 @@ export class MemberController {
     @Query('paqueteid') paqueteid: number,
     @Req() req: any,
   ) {
-    console.log(req.user);
     return this.memberService.findAll(jobid, paqueteid);
   }
 

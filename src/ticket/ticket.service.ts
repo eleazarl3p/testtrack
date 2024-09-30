@@ -242,26 +242,26 @@ export class TicketService {
     //   })
     //   .filter(Boolean);
 
-    // const filteredMembers = (
-    //   await Promise.all(
-    //     members.map(async (mb) => {
-    //       const count = await this.countMemberTicket(mb._id);
-    //       if (mb.quantity > count) {
-    //         const available = mb.quantity - count;
-    //         delete mb.quantity;
-    //         return {
-    //           ...mb,
-    //           available,
-    //         };
-    //       }
+    const filteredMembers = (
+      await Promise.all(
+        members.map(async (mb) => {
+          const count = await this.countMemberTicket(mb._id);
+          if (mb.quantity > count) {
+            const available = mb.quantity - count;
+            delete mb.quantity;
+            return {
+              ...mb,
+              available,
+            };
+          }
 
-    //       return null;
-    //     }),
-    //   )
-    // ).filter(Boolean);
+          return null;
+        }),
+      )
+    ).filter(Boolean);
 
-    return members;
-    //return filteredMembers;
+    //return members;
+    return filteredMembers;
   }
 
   async countMemberTicket(member_id: number) {
@@ -355,9 +355,7 @@ export class TicketService {
         otm.user = { _id: 1 } as User;
         await otm.save();
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   async deliveredTicket(

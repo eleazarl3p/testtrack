@@ -23,9 +23,7 @@ export class MemberService {
     try {
       const member = await this.memberRepo.save(createMemberDto);
       return member;
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   async findAll(job_id: number, paquete_id: number) {
@@ -291,7 +289,6 @@ export class MemberService {
         .having('COALESCE(COUNT(task._id), 0) < member.quantity')
         .getRawMany();
     } catch (error) {
-      console.log(error);
       throw new BadRequestException(error.code);
     }
   }

@@ -7,12 +7,13 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 
-@Controller('contacts')
+@Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
@@ -43,7 +44,12 @@ export class ContactController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.contactService.remove(id);
+  }
+
+  @Patch('restore/:id')
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.contactService.restore(id);
   }
 }

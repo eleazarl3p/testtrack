@@ -90,7 +90,7 @@ export class MachineService {
   // }
 
   async update(_id: number, updateMachineDto: UpdateMachineDto) {
-    const { shapes, name } = updateMachineDto;
+    const { shapes, name, rank } = updateMachineDto;
 
     const machine = await this.machineRepo.findOne({ where: { _id } });
 
@@ -100,6 +100,7 @@ export class MachineService {
     });
 
     machine.name = name;
+    machine.rank = rank;
 
     return await machine.save();
   }

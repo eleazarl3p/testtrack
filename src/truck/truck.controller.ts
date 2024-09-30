@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TruckService } from './truck.service';
 import { CreateTruckDto } from './dto/create-truck.dto';
@@ -31,12 +32,20 @@ export class TruckController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTruckDto: UpdateTruckDto) {
-    return this.truckService.update(+id, updateTruckDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTruckDto: UpdateTruckDto,
+  ) {
+    return this.truckService.update(id, updateTruckDto);
+  }
+
+  @Patch('restore/:id')
+  restore(@Param('id') id: number) {
+    return this.truckService.restore(id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.truckService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.truckService.remove(id);
   }
 }
