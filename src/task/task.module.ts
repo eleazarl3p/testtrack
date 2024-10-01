@@ -9,6 +9,8 @@ import { ShapeModule } from 'src/shape/shape.module';
 import { CutHistory } from './entities/cut-history.entity';
 import { TaskArea } from './entities/taskarea.entity';
 import { TaskAreaHistory } from './entities/taskarea-history';
+import { Job } from 'src/job/entites/job.entity';
+import { JobModule } from 'src/job/job.module';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { TaskAreaHistory } from './entities/taskarea-history';
     ]),
     forwardRef(() => MemberModule),
     ShapeModule,
+    JobModule,
   ],
   controllers: [TaskController],
   providers: [TaskService],

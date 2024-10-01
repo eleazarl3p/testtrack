@@ -13,6 +13,7 @@ import { OtherItem } from './other-item.entity';
 
 import { Truck } from 'src/truck/entities/truck.entity';
 import { Tcomment } from './tcomment.entity';
+import { Job } from 'src/job/entites/job.entity';
 
 export enum ticketType {
   ERECT = 'ERECT',
@@ -55,6 +56,9 @@ export class Ticket extends BaseEntity {
     onDelete: 'SET NULL',
   })
   truck: Truck;
+
+  @ManyToOne(() => Job, { onDelete: 'CASCADE' })
+  job: Job;
 
   @CreateDateColumn({ type: 'datetime' })
   created_at: Date;

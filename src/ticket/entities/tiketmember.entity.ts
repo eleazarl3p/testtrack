@@ -1,5 +1,6 @@
 import {
   BaseEntity,
+  BeforeRemove,
   Column,
   Entity,
   ManyToOne,

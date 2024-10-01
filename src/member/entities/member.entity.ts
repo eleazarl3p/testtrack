@@ -1,6 +1,7 @@
 import { Paquete } from 'src/paquete/entities/paquete.entity';
 import {
   BaseEntity,
+  BeforeRemove,
   Column,
   CreateDateColumn,
   Entity,

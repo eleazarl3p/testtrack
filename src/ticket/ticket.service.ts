@@ -48,7 +48,12 @@ export class TicketService {
     lastTicketId += 1;
     const barcode = `TI-${job_name}-${lastTicketId.toString().padStart(5, '0')}`;
 
-    const ticket = await this.ticketRepo.save({ barcode, ...ticketDto });
+    const job = await this.jobService.find(job_name);
+    const ticket = await this.ticketRepo.save({
+      barcode,
+      ...ticketDto,
+      job: { _id: job._id },
+    });
 
     for (const ti of ticketItems) {
       const tkm = this.tkmRepo.create(ti);

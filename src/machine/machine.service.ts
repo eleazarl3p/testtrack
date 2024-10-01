@@ -9,12 +9,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Machine } from './entities/machine.entity';
 import { Repository } from 'typeorm';
 import { Shape } from 'src/shape/entities/shape.entity';
+import { JobService } from 'src/job/job.service';
 
 @Injectable()
 export class MachineService {
   constructor(
     @InjectRepository(Machine)
     private readonly machineRepo: Repository<Machine>,
+
+    private readonly jobService: JobService,
   ) {}
 
   async create(createMachineDto: CreateMachineDto) {
@@ -105,63 +108,85 @@ export class MachineService {
     return await machine.save();
   }
 
-  async tasks(id: number, paquete_id: number, pending: boolean = false) {
-    const machine = await this.machineRepo.findOne({
-      where: {
-        _id: id,
-        tasks_items: {
-          task: {
-            member: { paquete: { _id: paquete_id } },
-            items: { machine: { _id: id } },
-          },
-        },
-      },
-      relations: {
-        tasks_items: {
-          material: true,
-          task: { team: true },
-          cut_history: true,
-        },
-      },
-    });
+  // async tasks(id: number, paquete_id: number, pending: boolean = false) {
+  //   const machine = await this.machineRepo.findOne({
+  //     where: {
+  //       _id: id,
+  //       tasks_items: {
+  //         task: {
+  //           member: { paquete: { _id: paquete_id } },
+  //           items: { machine: { _id: id } },
+  //         },
+  //       },
+  //     },
+  //     relations: {
+  //       tasks_items: {
+  //         material: true,
+  //         task: { team: true },
+  //         cut_history: true,
+  //       },
+  //     },
+  //   });
 
-    if (!machine) {
-      throw new NotFoundException();
-    }
-    return machine;
-    const tasks = machine.tasks_items.map((ti) => {
-      ti.material['quantity'] = ti.assigned;
-      ti.material['cut_history'] = ti.cut_history.map((ct) => {
-        return {
-          ...ct,
-          user: '...',
-        };
-      });
-      return {
-        _id: ti._id,
-        expected_date: ti.task.expected_date,
-        material: ti.material,
-      };
-    });
+  //   if (!machine) {
+  //     throw new NotFoundException();
+  //   }
+  //   return machine;
+  //   const tasks = machine.tasks_items.map((ti) => {
+  //     ti.material['quantity'] = ti.assigned;
+  //     ti.material['cut_history'] = ti.cut_history.map((ct) => {
+  //       return {
+  //         ...ct,
+  //         user: '...',
+  //       };
+  //     });
+  //     return {
+  //       _id: ti._id,
+  //       expected_date: ti.task.expected_date,
+  //       material: ti.material,
+  //     };
+  //   });
 
-    if (pending) {
-      return tasks
-        .map((t) => {
-          const totCut = t.material['cut_history'].reduce(
-            (acc: number, c: { cut: any }) => (acc += c.cut),
-            0,
-          );
+  //   if (pending) {
+  //     return tasks
+  //       .map((t) => {
+  //         const totCut = t.material['cut_history'].reduce(
+  //           (acc: number, c: { cut: any }) => (acc += c.cut),
+  //           0,
+  //         );
 
-          if (t.material['quantity'] > totCut) {
-            return t;
-          }
-        })
-        .filter(Boolean);
-    }
+  //         if (t.material['quantity'] > totCut) {
+  //           return t;
+  //         }
+  //       })
+  //       .filter(Boolean);
+  //   }
 
-    return tasks;
-  }
+  //   return tasks;
+  // }
 
+  // async jobMachineTask(machine_id: number, job_id: number) {
+  //   const job = await this.jobService.findById(job_id);
+
+  //   if (!job) throw new NotFoundException('job not found');
+
+  //   const result = Promise.all(
+  //     job.paquetes
+  //       .map(async (pq) => {
+  //         const tasks = await this.tasks(machine_id, pq._id, true);
+
+  //         if (tasks) {
+  //           return {
+  //             name: pq.name,
+  //             tasks: tasks,
+  //           };
+  //         }
+  //       })
+  //       .filter(Boolean),
+  //   );
+
+  //   return result;
+  // }
   async remove(_id: number) {
     return await this.machineRepo.delete(_id);
   }

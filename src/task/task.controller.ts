@@ -62,6 +62,14 @@ export class TaskController {
     return this.taskService.pendingTaskMachine(machineId, paqueteId, all);
   }
 
+  @Get('job/pending-paquetes-tasks/:machine_id/:job_id')
+  async jobMachineTask(
+    @Param('machine_id', ParseIntPipe) machine_id: number,
+    @Param('job_id', ParseIntPipe) job_id: number,
+  ) {
+    return await this.taskService.jobMachineTask(machine_id, job_id);
+  }
+
   // @Get('fully-cut-tasks/:paquete')
   // async fullyCutTasks(@Param('paquete', ParseIntPipe) paqueteId: number) {
   //   return await this.taskService.fullyCutTasks(paqueteId);

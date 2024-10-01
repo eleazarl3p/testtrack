@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,6 +24,7 @@ import { TaskArea } from './entities/taskarea.entity';
 import { Area } from 'src/area/entities/area.entity';
 import { TaskAreaHistory } from './entities/taskarea-history';
 import { DeleteTaskDto } from './dto/delete-task.dto';
+import { JobService } from 'src/job/job.service';
 
 @Injectable()
 export class TaskService {
@@ -42,6 +48,8 @@ export class TaskService {
     private memberService: MemberService,
 
     private readonly shapeService: ShapeService,
+
+    private readonly jobService: JobService,
   ) {}
 
   calculateDate(delta: number) {
@@ -297,6 +305,60 @@ export class TaskService {
         }
       })
       .filter(Boolean);
+  }
+
+  async getItems(machineId: number, paqueteId: number) {
+    const itms = await this.taskItemRepo.find({
+      where: {
+        machine: { _id: machineId },
+        task: { member: { paquete: { _id: paqueteId } } },
+      },
+      relations: {
+        task: { team: true },
+        machine: true,
+        material: true,
+        cut_history: { user: true },
+      },
+    });
+
+    return itms;
+  }
+  async jobMachineTask(machineId: number, job_id: number) {
+    const job = await this.jobService.findById(job_id);
+
+    if (!job) throw new NotFoundException('job not found');
+
+    const paqs = Promise.all(
+      job.paquetes
+        .map(async (pqt) => {
+          const items = await this.getItems(machineId, pqt._id);
+
+          if (items.length) {
+            return {
+              name: pqt.name,
+              items: items.map((item) => {
+                return {
+                  _id: item._id,
+                  team: item.task.team.name,
+                  estimated_date: item.task.expected_date,
+                  material: {
+                    ...item.material,
+                    quantity: item.assigned,
+                    cut_history: item.cut_history.map((h) => {
+                      const { user, ...rest } = h;
+                      return {
+                        ...rest,
+                      };
+                    }),
+                  },
+                };
+              }),
+            };
+          }
+        })
+        .filter(Boolean),
+    );
+    return paqs;
   }
 
   async recentlyCutMaterials(paqueteId: number) {

@@ -28,14 +28,22 @@ export class MachineController {
     return this.machineService.findAll();
   }
 
-  @Get(':machine_id/:paquete_id/tasks')
-  async pendingtasks(
-    @Param('machine_id', ParseIntPipe) machine_id: number,
-    @Param('paquete_id', ParseIntPipe) paquete_id: number,
-    @Query('pending', ParseBoolPipe) pending: boolean,
-  ) {
-    return await this.machineService.tasks(machine_id, paquete_id, pending);
-  }
+  // @Get(':machine_id/:paquete_id/tasks')
+  // async pendingtasks(
+  //   @Param('machine_id', ParseIntPipe) machine_id: number,
+  //   @Param('paquete_id', ParseIntPipe) paquete_id: number,
+  //   @Query('pending', ParseBoolPipe) pending: boolean,
+  // ) {
+  //   return await this.machineService.tasks(machine_id, paquete_id, pending);
+  // }
+
+  // @Get('job/pending-paquetes-tasks/:machine_id/:job_id')
+  // async jobMachineTask(
+  //   @Param('machine_id', ParseIntPipe) machine_id: number,
+  //   @Param('job_id', ParseIntPipe) job_id: number,
+  // ) {
+  //   return await this.machineService.jobMachineTask(machine_id, job_id);
+  // }
 
   @Patch(':id')
   update(
