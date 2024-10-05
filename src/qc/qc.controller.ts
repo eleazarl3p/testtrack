@@ -5,22 +5,26 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
+  Query,
   Req,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { QcService } from './qc.service';
-import { TaskService } from 'src/task/task.service';
+
 import { CutTaskItemDto } from 'src/task/dto/cut-task-item.dto';
 import { TaskAreaHistoryDto } from 'src/task/dto/task-to-area.dto';
-import { JobService } from 'src/job/job.service';
+
 import { AuthGuard } from '@nestjs/passport';
+import { TaskService } from 'src/task/task.service';
+import { RFDto } from './dto/rf.dto';
 
 @Controller('qc')
 @UseGuards(AuthGuard('jwt'))
 export class QcController {
   constructor(
     private readonly qcService: QcService,
-    private readonly jobService: JobService,
     private readonly taskService: TaskService,
   ) {}
 
@@ -29,46 +33,16 @@ export class QcController {
     return await this.taskService.qcCompletedTasks(paqueteId);
   }
 
-  @Get('jobs')
+  @Get('job/pending')
   async pendingJobs() {
-    const jobs = await this.jobService.findAll();
-
-    const njbs = await Promise.all(
-      jobs.map(async (jb) => {
-        const paq = await Promise.all(
-          jb.paquetes.map(async (pq) => {
-            const materials_to_review =
-              await this.taskService.recentlyCutMaterials(pq._id);
-
-            if (materials_to_review.length) {
-              return pq;
-            } else {
-              const tasks_to_review = await this.taskService.qcCompletedTasks(
-                pq._id,
-              );
-
-              if (tasks_to_review.length) {
-                return pq;
-              }
-            }
-          }),
-        );
-
-        const filteredPaq = paq.filter(Boolean);
-
-        if (filteredPaq.length) {
-          return {
-            ...jb,
-            paquetes: filteredPaq,
-          };
-        }
-      }),
-    );
-
-    const filteredJobs = njbs.filter(Boolean);
-
-    return filteredJobs;
+    return await this.qcService.pendingJobs();
   }
+
+  @Get('job/failed')
+  async failedJobs() {
+    return await this.qcService.failedJobs();
+  }
+
   @Get('recently-cut-materials/:paquete')
   async recentlyCutMaterials(
     @Param('paquete', ParseIntPipe) paqueteId: number,
@@ -103,5 +77,24 @@ export class QcController {
       areaId,
       userId,
     );
+  }
+
+  @Get('failed-cut-materials/:paquete')
+  async failedMaterials(@Param('paquete', ParseIntPipe) paqueteId: number) {
+    return this.taskService.failedCutMaterials(paqueteId);
+  }
+
+  @Post('submit-form')
+  submitFormReview(
+    @Query('piecemarks') piecemarks: string,
+    @Body() rfDto: RFDto,
+    @Request() req: any,
+  ) {
+    if (piecemarks == 'materials') {
+      const userId = req.user.sub;
+      return this.qcService.submitFormTaskItem(rfDto, userId);
+    } else if (piecemarks == 'members') {
+      console.log('member');
+    }
   }
 }

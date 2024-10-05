@@ -1,4 +1,3 @@
-import { User } from 'src/user/entities/user.entity';
 import {
   BaseEntity,
   Column,
@@ -8,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TaskArea } from './taskarea.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class TaskAreaHistory extends BaseEntity {

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Level } from 'src/level/entities/level.entity';
 import { Team } from 'src/team/entities/team.entity';
-import { Ticket } from 'src/ticket/entities/ticket.entity';
+import { Ticket } from 'src/ticket/entity/ticket.entity';
 
 // import { Ticket_Event } from 'src/ticket/entities/ticket_event.etity';
 import {

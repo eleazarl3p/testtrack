@@ -4,20 +4,20 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
-import { Ticket } from './entities/ticket.entity';
+import { Ticket } from './entity/ticket.entity';
 import { MemberService } from 'src/member/member.service';
 
-import { TicketMember } from './entities/tiketmember.entity';
+import { TicketMember } from './entity/tiketmember.entity';
 import { Member } from 'src/member/entities/member.entity';
-import { OtherItem } from './entities/other-item.entity';
+import { OtherItem } from './entity/other-item.entity';
 import { MemberMaterialService } from 'src/member/membermaterial.service';
 import { JobService } from 'src/job/job.service';
 
 import { LoadTicketDto } from './dto/load-ticket.dto';
 
-import { User } from 'src/user/entities/user.entity';
 import { Truck } from 'src/truck/entities/truck.entity';
-import { Tcomment } from './entities/tcomment.entity';
+import { Tcomment } from './entity/tcomment.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TicketService {

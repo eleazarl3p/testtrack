@@ -1,5 +1,6 @@
 import { Area } from 'src/area/entities/area.entity';
 import { User } from 'src/user/entities/user.entity';
+
 import {
   Column,
   Entity,

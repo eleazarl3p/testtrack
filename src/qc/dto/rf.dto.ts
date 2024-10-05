@@ -1,0 +1,52 @@
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { fitUpInspection } from '../entity/inspection.entity';
+import { Type } from 'class-transformer';
+import { CreateSpecialUserDto } from 'src/specialuser/dto/create-special-user.dto';
+import { CreateCriteriaDto, CriteriaAnswer } from './create-criteria.dto';
+
+export class RFDto {
+  @IsString()
+  job: string;
+
+  @IsString()
+  inspection_type: string;
+
+  @IsOptional()
+  @IsString()
+  comments?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  photos: string[];
+
+  @IsEnum(fitUpInspection)
+  fit_up_inspection: fitUpInspection;
+
+  @IsBoolean()
+  non_conformance: boolean;
+
+  @ValidateNested()
+  @Type(() => CreateSpecialUserDto)
+  inspector: CreateSpecialUserDto;
+
+  @ValidateNested()
+  @Type(() => CreateSpecialUserDto)
+  fabricator: CreateSpecialUserDto;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CriteriaAnswer)
+  criteria_answers: CriteriaAnswer[];
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  piecemarks: number[];
+}

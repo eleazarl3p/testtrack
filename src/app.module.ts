@@ -18,6 +18,7 @@ import { TeamModule } from './team/team.module';
 import { TaskModule } from './task/task.module';
 import { TruckModule } from './truck/truck.module';
 import { QcModule } from './qc/qc.module';
+import { SpecialuserModule } from './specialuser/specialuser.module';
 
 import * as dotenv from 'dotenv';
 
@@ -53,6 +54,7 @@ dotenv.config();
     TaskModule,
     TruckModule,
     QcModule,
+    SpecialuserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

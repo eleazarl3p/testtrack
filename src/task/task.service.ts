@@ -18,13 +18,16 @@ import { CutItemDto, CutTaskItemDto } from './dto/cut-task-item.dto';
 import { Machine } from 'src/machine/entities/machine.entity';
 import { Material } from 'src/material/entities/material.entity';
 import { CutHistory } from './entities/cut-history.entity';
-import { User } from 'src/user/entities/user.entity';
+
 import { TaskAreaHistoryDto, TaskToAreaDto } from './dto/task-to-area.dto';
 import { TaskArea } from './entities/taskarea.entity';
 import { Area } from 'src/area/entities/area.entity';
 import { TaskAreaHistory } from './entities/taskarea-history';
 import { DeleteTaskDto } from './dto/delete-task.dto';
 import { JobService } from 'src/job/job.service';
+import { machine } from 'os';
+import { User } from 'src/user/entities/user.entity';
+import { MaterialInspection } from 'src/qc/entity/inspection.entity';
 
 @Injectable()
 export class TaskService {
@@ -377,21 +380,85 @@ export class TaskService {
     const taskItems = this.formatTaskItems(items);
 
     return taskItems
-      .map((taks) => {
-        const toBeApproved = taks.member.materials[0].cut_history.filter(
+      .map((task) => {
+        const toBeApproved = task.member.materials[0].cut_history.filter(
           (ch) => ch.approved == null,
         );
 
         if (toBeApproved.length) {
-          taks.member.materials[0].cut_history = toBeApproved;
-          taks.member.materials[0].quantity = toBeApproved.reduce(
+          task.member.materials[0].cut_history = toBeApproved;
+          task.member.materials[0].quantity = toBeApproved.reduce(
             (acc, c) => (acc += c.quantity),
             0,
           );
-          return taks;
+          return task;
         }
       })
       .filter(Boolean);
+  }
+
+  async failedCutMaterials(paqueteId: number) {
+    const ch = await this.cutHistoryRepo.find({
+      where: {
+        task_item: { task: { member: { paquete: { _id: paqueteId } } } },
+      },
+      relations: {
+        task_item: {
+          machine: true,
+          material: true,
+          task: { member: true, team: true },
+        },
+        inspection: true,
+      },
+    });
+    const failed = ch.filter((c) => {
+      return (
+        c.approved != null && c.quantity > c.approved && c.inspection == null
+      );
+    });
+    return failed.map((f) => {
+      return {
+        _id: f._id,
+        machine: f.task_item.machine.name,
+        member: f.task_item.task.member.piecemark,
+        team: f.task_item.task.team.name,
+        material: {
+          ...f.task_item.material,
+          quantity: f.quantity - f.approved,
+          cut_history: [],
+        },
+      };
+    });
+    // const items = await this.taskItemRepo.find({
+    //   where: {
+    //     task: { member: { paquete: { _id: paqueteId } } },
+    //   },
+    //   relations: {
+    //     task: { team: true, member: true },
+    //     machine: true,
+    //     material: true,
+    //     cut_history: { user: true, inspection: true },
+    //   },
+    // });
+    // const taskItems = this.formatTaskItems(items);
+    // return taskItems
+    //   .map((task) => {
+    //     const failed = task.member.materials[0].cut_history.filter(
+    //       (ch) =>
+    //         ch.approved != null &&
+    //         ch.quantity > ch.approved &&
+    //         ch.inspection == null,
+    //     );
+    //     if (failed.length) {
+    //       task.member.materials[0].cut_history = failed;
+    //       task.member.materials[0].quantity = failed.reduce(
+    //         (acc, c) => (acc += c.quantity - c.approved),
+    //         0,
+    //       );
+    //       return task;
+    //     }
+    //   })
+    //   .filter(Boolean);
   }
 
   async qcCompletedTasks(paqueteId: number) {
@@ -443,6 +510,54 @@ export class TaskService {
     });
   }
 
+  async qcFailedTasks(paqueteId: number) {
+    const tasks = await this.taskAreaHistoryRepo.find({
+      where: {
+        task_area: { task: { member: { paquete: { _id: paqueteId } } } },
+      },
+      relations: {
+        task_area: {
+          area: true,
+          task: {
+            member: true,
+            team: true,
+            items: { material: true, cut_history: { user: true } },
+          },
+        },
+      },
+    });
+
+    const filteredTasks = tasks.filter(
+      (th) => th.approved == false && th.completed > 0,
+    );
+
+    return filteredTasks.map((th) => {
+      return {
+        _id: th._id,
+        expected_date: th.task_area.task.expected_date,
+        area: th.task_area.area.name,
+        team: th.task_area.task.team.name,
+        task_id: th.task_area.task._id,
+        member: {
+          ...th.task_area.task.member,
+          quantity: 1, //th.completed,
+          materials: th.task_area.task.items.map((it) => {
+            return {
+              ...it.material,
+              quantity: it.assigned,
+              cut_history: it.cut_history.map((h) => {
+                return {
+                  ...h,
+                  user: h.user.fullname(),
+                };
+              }),
+            };
+          }),
+          areas: [],
+        },
+      };
+    });
+  }
   async qcReviewCutMaterials(
     cutTaskItemDtos: CutTaskItemDto[],
     areaId: number,
@@ -522,6 +637,11 @@ export class TaskService {
     }
   }
 
+  async qcInspectCutHistory(_id: number, inspection: MaterialInspection) {
+    try {
+      return await this.cutHistoryRepo.update({ _id }, { inspection });
+    } catch (error) {}
+  }
   // async fullyCutTasks(paqueteId: number) {
   //   const tasks = await this.taskRepo.find({
   //     where: { member: { paquete: { _id: paqueteId } } },

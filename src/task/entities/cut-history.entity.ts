@@ -3,11 +3,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TaskItem } from './task-item.entity';
+
+import { MaterialInspection } from 'src/qc/entity/inspection.entity';
 import { User } from 'src/user/entities/user.entity';
 
 @Entity()
@@ -41,6 +45,10 @@ export class CutHistory extends BaseEntity {
     onDelete: 'SET NULL',
   })
   reviewed_by: User;
+
+  @OneToOne(() => MaterialInspection)
+  @JoinColumn()
+  inspection: MaterialInspection;
 
   @CreateDateColumn({ type: 'datetime' })
   created_at: Date;

@@ -8,12 +8,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { TicketMember } from './tiketmember.entity';
-import { User } from 'src/user/entities/user.entity';
+
 import { OtherItem } from './other-item.entity';
 
 import { Truck } from 'src/truck/entities/truck.entity';
 import { Tcomment } from './tcomment.entity';
 import { Job } from 'src/job/entites/job.entity';
+import { User } from 'src/user/entities/user.entity';
 
 export enum ticketType {
   ERECT = 'ERECT',

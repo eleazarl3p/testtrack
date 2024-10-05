@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { MemberMaterial } from './membermaterial.entity';
-import { TicketMember } from 'src/ticket/entities/tiketmember.entity';
+import { TicketMember } from 'src/ticket/entity/tiketmember.entity';
 import { Task } from 'src/task/entities/task.entity';
 
 @Entity()

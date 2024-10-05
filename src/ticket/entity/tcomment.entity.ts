@@ -1,5 +1,6 @@
-import { Ticket } from 'src/ticket/entities/ticket.entity';
+import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { User } from 'src/user/entities/user.entity';
+
 import {
   BaseEntity,
   Column,

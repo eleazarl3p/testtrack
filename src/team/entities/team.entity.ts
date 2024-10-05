@@ -1,5 +1,6 @@
 import { Task } from 'src/task/entities/task.entity';
 import { User } from 'src/user/entities/user.entity';
+
 import {
   Column,
   CreateDateColumn,
@@ -29,3 +30,5 @@ export class Team {
   @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 }
+
+//src/specialuser/entity/user.entity
