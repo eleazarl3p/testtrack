@@ -35,7 +35,8 @@ export class QcController {
 
   @Get('job/pending')
   async pendingJobs() {
-    return await this.qcService.pendingJobs();
+    const t = await this.qcService.pendingJobs();
+    return t;
   }
 
   @Get('job/failed')
@@ -96,5 +97,10 @@ export class QcController {
     } else if (piecemarks == 'members') {
       console.log('member');
     }
+  }
+
+  @Get('reports/:paquete')
+  reports(@Param('paquete', ParseIntPipe) paqueteId: number) {
+    return this.taskService.reports(paqueteId);
   }
 }

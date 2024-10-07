@@ -25,7 +25,6 @@ import { Area } from 'src/area/entities/area.entity';
 import { TaskAreaHistory } from './entities/taskarea-history';
 import { DeleteTaskDto } from './dto/delete-task.dto';
 import { JobService } from 'src/job/job.service';
-import { machine } from 'os';
 import { User } from 'src/user/entities/user.entity';
 import { MaterialInspection } from 'src/qc/entity/inspection.entity';
 
@@ -326,6 +325,7 @@ export class TaskService {
 
     return itms;
   }
+
   async jobMachineTask(machineId: number, job_id: number) {
     const job = await this.jobService.findById(job_id);
 
@@ -747,5 +747,37 @@ export class TaskService {
     }
 
     return 'deleted';
+  }
+
+  async reports(paqueteId: number) {
+    const items = await this.cutHistoryRepo.find({
+      // where: {
+      //   task_item: { task: { member: { paquete: { _id: paqueteId } } } },
+      // },
+
+      relations: {
+        inspection: {
+          criteriaAnswers: { criteria: true },
+          inspector: true,
+          fabricator: true,
+        },
+        task_item: { material: true },
+      },
+    });
+
+    return items
+      .map((item) => {
+        if (item.inspection != null) {
+          return {
+            ...item.inspection,
+            material: {
+              ...item.task_item.material,
+              quantity: item.quantity - item.approved,
+              cut_history: [],
+            },
+          };
+        }
+      })
+      .filter(Boolean);
   }
 }
