@@ -65,33 +65,6 @@ export class MachineService {
     // });
   }
 
-  // async findOne(_id: number) {
-  //   const machine = await this.machineRepo.findOne({
-  //     where: { _id },
-  //     relations: {
-  //       tasks_items: { task: true, material: true },
-  //     },
-  //     order: { tasks_items: { task: { expected_date: 'ASC' } } },
-  //   });
-
-  //   return {
-  //     _id: machine._id,
-  //     image: machine.image,
-  //     name: machine.name,
-  //     shape: machine.shapes,
-  //     items: machine.tasks_items.map((ti) => {
-  //       return {
-  //         id: ti._id,
-  //         material: ti.material,
-  //         assigned: ti.assigned,
-  //         cut: ti.cut_history.reduce((acc, cut) => (acc += cut.cut), 0),
-  //         approved: ti.cut_history.reduce((acc, cut) => (acc += cut.approved), 0),
-  //         expected_date: ti.task.expected_date.toISOString(),
-  //       };
-  //     }),
-  //   };
-  // }
-
   async update(_id: number, updateMachineDto: UpdateMachineDto) {
     const { shapes, name, rank } = updateMachineDto;
 
@@ -108,85 +81,6 @@ export class MachineService {
     return await machine.save();
   }
 
-  // async tasks(id: number, paquete_id: number, pending: boolean = false) {
-  //   const machine = await this.machineRepo.findOne({
-  //     where: {
-  //       _id: id,
-  //       tasks_items: {
-  //         task: {
-  //           member: { paquete: { _id: paquete_id } },
-  //           items: { machine: { _id: id } },
-  //         },
-  //       },
-  //     },
-  //     relations: {
-  //       tasks_items: {
-  //         material: true,
-  //         task: { team: true },
-  //         cut_history: true,
-  //       },
-  //     },
-  //   });
-
-  //   if (!machine) {
-  //     throw new NotFoundException();
-  //   }
-  //   return machine;
-  //   const tasks = machine.tasks_items.map((ti) => {
-  //     ti.material['quantity'] = ti.assigned;
-  //     ti.material['cut_history'] = ti.cut_history.map((ct) => {
-  //       return {
-  //         ...ct,
-  //         user: '...',
-  //       };
-  //     });
-  //     return {
-  //       _id: ti._id,
-  //       expected_date: ti.task.expected_date,
-  //       material: ti.material,
-  //     };
-  //   });
-
-  //   if (pending) {
-  //     return tasks
-  //       .map((t) => {
-  //         const totCut = t.material['cut_history'].reduce(
-  //           (acc: number, c: { cut: any }) => (acc += c.cut),
-  //           0,
-  //         );
-
-  //         if (t.material['quantity'] > totCut) {
-  //           return t;
-  //         }
-  //       })
-  //       .filter(Boolean);
-  //   }
-
-  //   return tasks;
-  // }
-
-  // async jobMachineTask(machine_id: number, job_id: number) {
-  //   const job = await this.jobService.findById(job_id);
-
-  //   if (!job) throw new NotFoundException('job not found');
-
-  //   const result = Promise.all(
-  //     job.paquetes
-  //       .map(async (pq) => {
-  //         const tasks = await this.tasks(machine_id, pq._id, true);
-
-  //         if (tasks) {
-  //           return {
-  //             name: pq.name,
-  //             tasks: tasks,
-  //           };
-  //         }
-  //       })
-  //       .filter(Boolean),
-  //   );
-
-  //   return result;
-  // }
   async remove(_id: number) {
     return await this.machineRepo.delete(_id);
   }

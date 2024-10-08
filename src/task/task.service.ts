@@ -331,37 +331,35 @@ export class TaskService {
 
     if (!job) throw new NotFoundException('job not found');
 
-    const paqs = Promise.all(
-      job.paquetes
-        .map(async (pqt) => {
-          const items = await this.getItems(machineId, pqt._id);
+    const paqs = await Promise.all(
+      job.paquetes.map(async (pqt) => {
+        const items = await this.getItems(machineId, pqt._id);
 
-          if (items.length) {
-            return {
-              name: pqt.name,
-              items: items.map((item) => {
-                return {
-                  _id: item._id,
-                  team: item.task.team.name,
-                  estimated_date: item.task.expected_date,
-                  material: {
-                    ...item.material,
-                    quantity: item.assigned,
-                    cut_history: item.cut_history.map((h) => {
-                      const { user, ...rest } = h;
-                      return {
-                        ...rest,
-                      };
-                    }),
-                  },
-                };
-              }),
-            };
-          }
-        })
-        .filter(Boolean),
+        if (items.length) {
+          return {
+            name: pqt.name,
+            items: items.map((item) => {
+              return {
+                _id: item._id,
+                team: item.task.team.name,
+                estimated_date: item.task.expected_date,
+                material: {
+                  ...item.material,
+                  quantity: item.assigned,
+                  cut_history: item.cut_history.map((h) => {
+                    const { user, ...rest } = h;
+                    return {
+                      ...rest,
+                    };
+                  }),
+                },
+              };
+            }),
+          };
+        }
+      }),
     );
-    return paqs;
+    return paqs.filter(Boolean);
   }
 
   async recentlyCutMaterials(paqueteId: number) {

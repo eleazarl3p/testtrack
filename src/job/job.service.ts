@@ -18,7 +18,7 @@ export class JobService {
   ) {}
 
   async findById(_id: number): Promise<Job> {
-    const job = await this.jobRepo.findOneOrFail({
+    const job = await this.jobRepo.findOne({
       where: { _id },
       relations: { paquetes: true },
       order: { paquetes: { name: 'ASC' } },

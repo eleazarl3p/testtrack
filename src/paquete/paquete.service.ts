@@ -29,12 +29,8 @@ export class PaqueteService {
     private readonly mmService: MemberMaterialService,
   ) {}
   async create(job_id: number, createPaqueteDto: CreatePaqueteDto) {
-    let job: Job = undefined;
-    try {
-      job = await this.jobService.findById(job_id);
-    } catch {
-      throw new NotFoundException('Job not found');
-    }
+    const job = await this.jobService.findById(job_id);
+    if (!job) throw new NotFoundException('Job not found');
 
     const { members, ...paqueteDto } = createPaqueteDto;
 
