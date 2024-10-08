@@ -49,7 +49,6 @@ export class TaskController {
   @Post('machine/cut-materials')
   async cutTaskItems(@Body() cutItemDto: CutItemDto[], @Req() req: any) {
     const userId = req.user.sub;
-    // console.log(userId);
     return await this.taskService.cutTaskItems(cutItemDto, userId);
   }
 

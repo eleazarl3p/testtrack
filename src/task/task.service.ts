@@ -27,6 +27,7 @@ import { DeleteTaskDto } from './dto/delete-task.dto';
 import { JobService } from 'src/job/job.service';
 import { User } from 'src/user/entities/user.entity';
 import { MaterialInspection } from 'src/qc/entity/inspection.entity';
+import { RFDto } from 'src/qc/dto/rf.dto';
 
 @Injectable()
 export class TaskService {
@@ -777,5 +778,9 @@ export class TaskService {
         }
       })
       .filter(Boolean);
+  }
+
+  async updateReport(reportId: number, rfDto: RFDto, userId: number) {
+    return;
   }
 }

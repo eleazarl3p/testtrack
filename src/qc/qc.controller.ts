@@ -103,4 +103,14 @@ export class QcController {
   reports(@Param('paquete', ParseIntPipe) paqueteId: number) {
     return this.taskService.reports(paqueteId);
   }
+
+  @Patch('reports/:id')
+  updateReport(
+    @Param('id', ParseIntPipe) reportId: number,
+    @Body() rfDto: RFDto,
+    @Request() req: any,
+  ) {
+    const userId = req.user.sub;
+    return this.taskService.updateReport(reportId, rfDto, userId);
+  }
 }
