@@ -3,14 +3,13 @@ import {
   IsBoolean,
   IsEnum,
   IsNumber,
-  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { fitUpInspection } from '../entity/inspection.entity';
 import { Type } from 'class-transformer';
 import { CreateSpecialUserDto } from 'src/specialuser/dto/create-special-user.dto';
-import { CreateCriteriaDto, CriteriaAnswer } from './create-criteria.dto';
+import { CriteriaAnswer } from './create-criteria.dto';
 
 export class RFDto {
   @IsString()
@@ -19,9 +18,8 @@ export class RFDto {
   @IsString()
   inspection_type: string;
 
-  @IsOptional()
   @IsString()
-  comments?: string;
+  comments: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -48,5 +46,5 @@ export class RFDto {
 
   @IsArray()
   @IsNumber({}, { each: true })
-  piecemarks: number[];
+  ids: number[];
 }

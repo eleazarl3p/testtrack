@@ -110,16 +110,10 @@ export class QcService {
   }
 
   async submitFormTaskItem(rfDto: RFDto, userId: number) {
-    const {
-      criteria_answers,
-      photos,
-      piecemarks,
-      inspector,
-      fabricator,
-      ...rest
-    } = rfDto;
+    const { criteria_answers, photos, ids, inspector, fabricator, ...rest } =
+      rfDto;
 
-    for (const _id of piecemarks) {
+    for (const _id of ids) {
       try {
         const mainsp = this.matInsRepo.create({
           ...rest,

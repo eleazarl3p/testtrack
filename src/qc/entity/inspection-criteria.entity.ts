@@ -16,7 +16,7 @@ export class InspectionCriteria extends BaseEntity {
   @ManyToOne(() => Criteria)
   criteria: Criteria;
 
-  @Column({ type: 'enum', enum: ['Yes', 'No', 'NA'], default: 'NA' })
+  @Column({ type: 'enum', enum: ['Yes', 'No', 'N/A'], default: 'N/A' })
   answer: string;
 
   @ManyToOne(() => MaterialInspection, (mi) => mi.criteriaAnswers, {

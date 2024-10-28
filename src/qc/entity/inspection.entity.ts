@@ -3,23 +3,20 @@ import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { InspectionCriteria } from './inspection-criteria.entity';
-import { json } from 'stream/consumers';
 import { TaskItem } from 'src/task/entities/task-item.entity';
-import { Task } from 'src/task/entities/task.entity';
-import { CutHistory } from 'src/task/entities/cut-history.entity';
 
 export enum fitUpInspection {
   INPROGRESS = 'In Progress',
   PASS = 'Pass',
   FAIL = 'Fail',
 }
+
 @Entity()
 export class MaterialInspection {
   @PrimaryGeneratedColumn()

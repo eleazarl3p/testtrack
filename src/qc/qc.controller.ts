@@ -44,6 +44,7 @@ export class QcController {
     return await this.qcService.failedJobs();
   }
 
+  // Materials from Cutting area that QC needs to check
   @Get('recently-cut-materials/:paquete')
   async recentlyCutMaterials(
     @Param('paquete', ParseIntPipe) paqueteId: number,
@@ -51,6 +52,7 @@ export class QcController {
     return await this.taskService.recentlyCutMaterials(paqueteId);
   }
 
+  // QC sends verified materials to an area
   @Patch('review-materials/:area')
   async reviewCutMaterials(
     @Body() cutTaskItemDto: CutTaskItemDto[],
@@ -65,6 +67,7 @@ export class QcController {
     );
   }
 
+  // QC verify member from an area
   @Patch('review-member/:area')
   async reviewMember(
     @Body() taskAreaHistoryDto: TaskAreaHistoryDto[],
@@ -80,11 +83,13 @@ export class QcController {
     );
   }
 
+  // QC get list of failed materials
   @Get('failed-cut-materials/:paquete')
   async failedMaterials(@Param('paquete', ParseIntPipe) paqueteId: number) {
     return this.taskService.failedCutMaterials(paqueteId);
   }
 
+  // QC send report
   @Post('submit-form')
   submitFormReview(
     @Query('piecemarks') piecemarks: string,
@@ -93,6 +98,7 @@ export class QcController {
   ) {
     if (piecemarks == 'materials') {
       const userId = req.user.sub;
+
       return this.qcService.submitFormTaskItem(rfDto, userId);
     } else if (piecemarks == 'members') {
       console.log('member');
@@ -104,7 +110,8 @@ export class QcController {
     return this.taskService.reports(paqueteId);
   }
 
-  @Patch('reports/:id')
+  // QC update report
+  @Patch('report/:id')
   updateReport(
     @Param('id', ParseIntPipe) reportId: number,
     @Body() rfDto: RFDto,

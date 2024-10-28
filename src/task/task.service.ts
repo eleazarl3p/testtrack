@@ -639,7 +639,9 @@ export class TaskService {
   async qcInspectCutHistory(_id: number, inspection: MaterialInspection) {
     try {
       return await this.cutHistoryRepo.update({ _id }, { inspection });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }
   // async fullyCutTasks(paqueteId: number) {
   //   const tasks = await this.taskRepo.find({
@@ -769,11 +771,13 @@ export class TaskService {
         if (item.inspection != null) {
           return {
             ...item.inspection,
-            material: {
-              ...item.task_item.material,
-              quantity: item.quantity - item.approved,
-              cut_history: [],
-            },
+            materials: [
+              {
+                ...item.task_item.material,
+                quantity: item.quantity - item.approved,
+                cut_history: [],
+              },
+            ],
           };
         }
       })
@@ -781,6 +785,6 @@ export class TaskService {
   }
 
   async updateReport(reportId: number, rfDto: RFDto, userId: number) {
-    return;
+    return rfDto;
   }
 }
