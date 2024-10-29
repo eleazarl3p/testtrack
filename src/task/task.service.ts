@@ -750,7 +750,7 @@ export class TaskService {
     return 'deleted';
   }
 
-  async reports(paqueteId: number) {
+  async getReports(paqueteId: number) {
     const items = await this.cutHistoryRepo.find({
       // where: {
       //   task_item: { task: { member: { paquete: { _id: paqueteId } } } },
@@ -784,7 +784,7 @@ export class TaskService {
       .filter(Boolean);
   }
 
-  async updateReport(reportId: number, rfDto: RFDto, userId: number) {
-    return rfDto;
-  }
+  // async updateReport(reportId: number, rfDto: RFDto, userId: number) {
+  //   return rfDto;
+  // }
 }

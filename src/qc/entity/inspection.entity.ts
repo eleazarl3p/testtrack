@@ -13,8 +13,8 @@ import { TaskItem } from 'src/task/entities/task-item.entity';
 
 export enum fitUpInspection {
   INPROGRESS = 'In Progress',
-  PASS = 'Pass',
-  FAIL = 'Fail',
+  PASS = 'PASS',
+  FAIL = 'FAIL',
 }
 
 @Entity()

@@ -91,7 +91,7 @@ export class QcController {
 
   // QC send report
   @Post('submit-form')
-  submitFormReview(
+  async submitFormReview(
     @Query('piecemarks') piecemarks: string,
     @Body() rfDto: RFDto,
     @Request() req: any,
@@ -99,25 +99,27 @@ export class QcController {
     if (piecemarks == 'materials') {
       const userId = req.user.sub;
 
-      return this.qcService.submitFormTaskItem(rfDto, userId);
+      return await this.qcService.submitFormTaskItem(rfDto, userId);
     } else if (piecemarks == 'members') {
       console.log('member');
+    } else {
+      console.log(piecemarks);
     }
   }
 
   @Get('reports/:paquete')
   reports(@Param('paquete', ParseIntPipe) paqueteId: number) {
-    return this.taskService.reports(paqueteId);
+    return this.taskService.getReports(paqueteId);
   }
 
   // QC update report
   @Patch('report/:id')
   updateReport(
     @Param('id', ParseIntPipe) reportId: number,
-    @Body() rfDto: RFDto,
+    @Body() rfDto: any,
     @Request() req: any,
   ) {
     const userId = req.user.sub;
-    return this.taskService.updateReport(reportId, rfDto, userId);
+    return this.qcService.updateReport(reportId, rfDto, userId);
   }
 }

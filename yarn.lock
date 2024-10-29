@@ -733,6 +733,15 @@
     iterare "1.2.1"
     tslib "2.6.3"
 
+"@nestjs/config@^3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/config/-/config-3.3.0.tgz#ddc520ba26a8453ee5e690e18fb7b35e9bac7974"
+  integrity sha512-pdGTp8m9d0ZCrjTpjkUbZx6gyf2IKf+7zlkrPNMsJzYZ4bFRRTpXrnj+556/5uiI6AfL5mMrJc2u7dB6bvM+VA==
+  dependencies:
+    dotenv "16.4.5"
+    dotenv-expand "10.0.0"
+    lodash "4.17.21"
+
 "@nestjs/core@^10.0.0":
   version "10.3.10"
   resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-10.3.10.tgz#508090c3ca36488a8e24a9e5939c2f37426e48f4"
@@ -1562,6 +1571,11 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
+aws-ssl-profiles@^1.1.1:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/aws-ssl-profiles/-/aws-ssl-profiles-1.1.2.tgz#157dd77e9f19b1d123678e93f120e6f193022641"
+  integrity sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==
+
 babel-jest@^29.7.0:
   version "29.7.0"
   resolved "https://registry.yarnpkg.com/babel-jest/-/babel-jest-29.7.0.tgz#f4369919225b684c56085998ac63dbd05be020d5"
@@ -2230,7 +2244,12 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
-dotenv@^16.0.3:
+dotenv-expand@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv-expand/-/dotenv-expand-10.0.0.tgz#12605d00fb0af6d0a592e6558585784032e4ef37"
+  integrity sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==
+
+dotenv@16.4.5, dotenv@^16.0.3:
   version "16.4.5"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.5.tgz#cdd3b3b604cb327e286b4762e13502f717cb099f"
   integrity sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==
@@ -3864,10 +3883,10 @@ lru-cache@^7.14.1:
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.18.3.tgz#f793896e0fd0e954a59dfdd82f0773808df6aa89"
   integrity sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==
 
-lru-cache@^8.0.0:
-  version "8.0.5"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-8.0.5.tgz#983fe337f3e176667f8e567cfcce7cb064ea214e"
-  integrity sha512-MhWWlVnuab1RG5/zMRRcVGXZLCXrZTgfwMikgzCegsPnG62yDQo5JnqKkrK4jO5iKqDAZGItAqN5CtKBCBWRUA==
+lru.min@^1.0.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/lru.min/-/lru.min-1.1.1.tgz#146e01e3a183fa7ba51049175de04667d5701f0e"
+  integrity sha512-FbAj6lXil6t8z4z3j0E5mfRlPzxkySotzUHwRXjlpRh10vc6AI6WN62ehZj82VG7M20rqogJ0GLwar2Xa05a8Q==
 
 magic-string@0.30.8:
   version "0.30.8"
@@ -4082,16 +4101,17 @@ mute-stream@1.0.0:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-1.0.0.tgz#e31bd9fe62f0aed23520aa4324ea6671531e013e"
   integrity sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==
 
-mysql2@^3.10.2:
-  version "3.10.2"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.10.2.tgz#37297d5d75d2958e37adc9cd4db865354832d7a4"
-  integrity sha512-KCXPEvAkO0RcHPr362O5N8tFY2fXvbjfkPvRY/wGumh4EOemo9Hm5FjQZqv/pCmrnuxGu5OxnSENG0gTXqKMgQ==
+mysql2@^3.11.3:
+  version "3.11.3"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.11.3.tgz#8291e6069a0784310846f6437b8527050dfc10c4"
+  integrity sha512-Qpu2ADfbKzyLdwC/5d4W7+5Yz7yBzCU05YWt5npWzACST37wJsB23wgOSo00qi043urkiRwXtEvJc9UnuLX/MQ==
   dependencies:
+    aws-ssl-profiles "^1.1.1"
     denque "^2.1.0"
     generate-function "^2.3.1"
     iconv-lite "^0.6.3"
     long "^5.2.1"
-    lru-cache "^8.0.0"
+    lru.min "^1.0.0"
     named-placeholders "^1.1.3"
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"

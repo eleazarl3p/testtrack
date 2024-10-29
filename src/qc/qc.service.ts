@@ -142,4 +142,42 @@ export class QcService {
       }
     }
   }
+
+  async updateReport(rfId: number, rfDto: RFDto, userId: number) {
+    const inspection = await this.matInsRepo.findOne({
+      where: { _id: rfId },
+      relations: { inspector: true, fabricator: true, criteriaAnswers: true },
+    });
+    const { criteria_answers, photos, inspector, fabricator, ...rest } = rfDto;
+
+    try {
+      await this.matInsRepo.update(
+        { _id: rfId },
+        {
+          inspection_type: rest.inspection_type,
+          comments: rest.comments,
+          fit_up_inspection: rest.fit_up_inspection,
+          non_conformance: rest.non_conformance,
+          inspector: { _id: inspector._id },
+          fabricator: { _id: fabricator._id },
+        },
+      );
+
+      for (const ca of inspection.criteriaAnswers) {
+        const crA = criteria_answers.filter((c) => c['_id'] == ca._id);
+        if (crA.length > 0) {
+          const result = crA.pop();
+
+          await this.inspectionCriteriaRepo.update(
+            {
+              _id: ca._id,
+            },
+            { answer: result.answer },
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEnum,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -45,6 +46,7 @@ export class RFDto {
   criteria_answers: CriteriaAnswer[];
 
   @IsArray()
+  @IsOptional()
   @IsNumber({}, { each: true })
   ids: number[];
 }
